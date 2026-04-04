@@ -8,7 +8,7 @@
         :root { --p: #2563eb; --s: #1e293b; --bg: #f8fafc; --accent: #8b5cf6; --orange: #f59e0b; --red: #ef4444; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; overflow: hidden; }
         
-        /* AUTH SECTION - QUAN TRỌNG: ĐÃ THÊM LẠI SIGN UP */
+        /* AUTH SECTION */
         #auth-screen { display: flex; align-items: center; justify-content: center; height: 100vh; background: linear-gradient(135deg, #2563eb, #8b5cf6); }
         .auth-box { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); width: 90%; max-width: 400px; text-align: center; }
         .auth-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; }
@@ -85,13 +85,13 @@
             <div class="card">
                 <h3>Chào, <span id="u-name" style="color:var(--p)">...</span>!</h3>
                 <p>Số dư: <b style="color:var(--orange)"><span id="u-points">0</span> ⭐</b></p>
-                <p style="font-size:0.8rem; color:gray">Chào mừng bạn đến với cộng đồng Lý Tự Trọng.</p>
+                <p style="font-size:0.8rem; color:gray">Chào mừng bạn đến với cộng đồng S-Bidi.</p>
             </div>
         </div>
 
         <div id="commu" class="page">
             <div class="card">
-                <div style="display:flex; justify-content:space-between"><h3>🌐 Cộng đồng</h3><button onclick="loadPosts()" style="width:auto; padding:5px 10px">Làm mới</button></div>
+                <div style="display:flex; justify-content:space-between"><h3>🌐 Cộng đồng</h3><button class="btn-go" onclick="loadPosts()" style="width:auto; padding:5px 10px">Làm mới</button></div>
                 <div id="post-list" style="margin-top:15px"></div>
             </div>
         </div>
@@ -102,11 +102,12 @@
 
         <div id="shop" class="page"><div class="card" style="text-align:center"><h3>🎁 Cửa hàng</h3><p>1000 ⭐ = 10 Robux</p><button class="btn-go" style="background:var(--orange)" onclick="doRedeem()">ĐỔI NGAY</button></div></div>
 
-        <div id="post" class="page"><div class="card"><h3>✍️ Đăng bài</h3><input id="ptitle" placeholder="Tiêu đề"><textarea id="pbody" rows="5"></textarea><button class="btn-go" onclick="sendPost()">Đăng ngay</button></div></div>
+        <div id="post" class="page"><div class="card"><h3>✍️ Đăng bài</h3><input id="ptitle" placeholder="Tiêu đề"><textarea id="pbody" rows="5" placeholder="Nội dung..."></textarea><button class="btn-go" onclick="sendPost()">Đăng ngay</button></div></div>
     </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbGu3sOjQwUBNMBQXcZDuGKgPjXzA2TOmjCFNZfWJtDzyinyzS4NZAwOWu-bHKI3v15/exec';
+    // ĐÃ CẬP NHẬT LINK APP SCRIPT MỚI NHẤT
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzGu3sOjQwUBNMBQXcZDuGKgPjXzA2TOmjCFNZfWJtDzyinyzS4NZAwOWu-bHKI3v15/exec';
     let myEmail = "";
 
     function toggleAuth(m) {
@@ -141,7 +142,7 @@
             const res = await fetch(`${scriptURL}?action=${type}&user=${encodeURIComponent(n)}&email=${e}&pass=${encodeURIComponent(p)}`);
             const text = await res.text();
             if(text.startsWith("AUTH_OK") || text==="SUCCESS") {
-                if(type==='signup') { alert("Đăng ký xong! Đăng nhập nhé."); toggleAuth('login'); }
+                if(type==='signup') { alert("Đăng ký thành công! Hãy đăng nhập nhé."); toggleAuth('login'); msg.innerText=""; }
                 else {
                     myEmail = e; let d = text.split('|');
                     document.getElementById('u-name').innerText = d[1];
@@ -149,20 +150,22 @@
                     document.getElementById('auth-screen').style.display = 'none';
                     document.getElementById('main-app').style.display = 'flex';
                 }
-            } else msg.innerText = "Lỗi thông tin!";
-        } catch(err) { msg.innerText = "Lỗi kết nối!"; }
+            } else msg.innerText = "Thông tin không chính xác!";
+        } catch(err) { msg.innerText = "Lỗi kết nối! Kiểm tra lại mạng hoặc link Apps Script."; }
     }
 
     async function loadPosts() {
-        const res = await fetch(`${scriptURL}?action=get_posts`);
-        const posts = await res.json();
-        document.getElementById('post-list').innerHTML = posts.map((p, i) => `
-            <div class="post-card">
-                <h4>${p.title}</h4><p>${p.body}</p>
-                <div class="cmt-box"><div id="cmts-${i}"><i>Bình luận:</i></div>
-                <div class="cmt-input"><input id="in-${i}" placeholder="Viết..."><button onclick="addC(${i})">Gửi</button></div></div>
-            </div>
-        `).join('');
+        try {
+            const res = await fetch(`${scriptURL}?action=get_posts`);
+            const posts = await res.json();
+            document.getElementById('post-list').innerHTML = posts.map((p, i) => `
+                <div class="post-card">
+                    <h4>${p.title}</h4><p>${p.body}</p>
+                    <div class="cmt-box"><div id="cmts-${i}"><i>Bình luận:</i></div>
+                    <div class="cmt-input"><input id="in-${i}" placeholder="Viết bình luận..."><button onclick="addC(${i})">Gửi</button></div></div>
+                </div>
+            `).join('');
+        } catch(e) { document.getElementById('post-list').innerHTML = "Chưa có bài đăng nào."; }
     }
 
     function addC(idx) {
@@ -173,29 +176,39 @@
     }
 
     async function loadNoti() {
-        const res = await fetch(`${scriptURL}?action=get_notifications`);
-        const data = await res.json();
-        document.getElementById('noti-list').innerHTML = data.map(n => `<div class="card" style="border-left:5px solid blue"><b>[${n.type}]</b> ${n.content}</div>`).join('');
+        try {
+            const res = await fetch(`${scriptURL}?action=get_notifications`);
+            const data = await res.json();
+            document.getElementById('noti-list').innerHTML = data.map(n => `<div class="card" style="border-left:5px solid blue; padding: 10px; margin-bottom: 10px;"><b>[${n.type}]</b> ${n.content}</div>`).join('');
+        } catch(e) { document.getElementById('noti-list').innerHTML = "Chưa có thông báo nào."; }
     }
 
     async function doRedeem() {
-        if(!confirm("Đổi 1000 sao?")) return;
-        const res = await fetch(`${scriptURL}?action=redeem&email=${myEmail}`);
-        const text = await res.text();
-        if(text==="REDEEM_OK") { alert("Thành công!"); location.reload(); } else alert("Không đủ điểm!");
+        if(!confirm("Bạn có chắc muốn dùng 1000 sao để đổi quà?")) return;
+        try {
+            const res = await fetch(`${scriptURL}?action=redeem&email=${myEmail}`);
+            const text = await res.text();
+            if(text==="REDEEM_OK") { alert("Gửi yêu cầu đổi quà thành công!"); location.reload(); } else alert("Bạn chưa đủ 1000 sao đâu!");
+        } catch(e) { alert("Lỗi kết nối!"); }
     }
 
     async function sendPost() {
         const t = document.getElementById('ptitle').value;
         const b = document.getElementById('pbody').value;
-        await fetch(`${scriptURL}?action=post_content&type=truyen&title=${encodeURIComponent(t)}&body=${encodeURIComponent(b)}&email=${myEmail}`);
-        alert("Đã đăng!"); goPage('commu', 'Cộng đồng');
+        if(!t || !b) { alert("Nhập đủ tiêu đề và nội dung nhé!"); return; }
+        try {
+            await fetch(`${scriptURL}?action=post_content&type=truyen&title=${encodeURIComponent(t)}&body=${encodeURIComponent(b)}&email=${myEmail}`);
+            alert("Đã đăng bài thành công!"); 
+            document.getElementById('ptitle').value = "";
+            document.getElementById('pbody').value = "";
+            goPage('commu', '🌐 Cộng đồng');
+        } catch(e) { alert("Lỗi khi đăng bài!"); }
     }
 
     function searchF() {
         let v = document.getElementById('fs').value;
         if(v.length < 2) return;
-        document.getElementById('fl').innerHTML = `<div style="display:flex; justify-content:space-between; padding:10px"><span>👤 ${v}</span><button onclick="alert('Đã gửi!')">Kết bạn</button></div>`;
+        document.getElementById('fl').innerHTML = `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom: 1px solid #eee;"><span>👤 ${v}</span><button class="btn-go" style="width: auto; padding: 5px 10px;" onclick="alert('Đã gửi lời mời kết bạn!')">Kết bạn</button></div>`;
     }
 </script>
 </body>
