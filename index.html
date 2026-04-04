@@ -73,7 +73,6 @@
                 <p>Số dư: <b style="color:orange">100 ⭐</b></p>
             </div>
         </div>
-        <div id="friend" class="page"><div class="card"><h3>Tính năng đang phát triển...</h3></div></div>
         <div id="post" class="page">
             <div class="card">
                 <h3>Viết chương mới</h3>
@@ -82,12 +81,11 @@
                 <button class="btn-go" onclick="submitPost()" style="background:#10b981">Đăng truyện</button>
             </div>
         </div>
-        <div id="quest" class="page"><div class="card"><h3>Nhiệm vụ hôm nay</h3><p>✅ Điểm danh: +5 ⭐</p></div></div>
-        <div id="shop" class="page"><div class="card"><h3>Cửa hàng đổi Robux</h3><p>1000 ⭐ = 10 Robux</p></div></div>
     </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbzT7SQ66UaZbGgOpdB5B6R4xgDKJcn-GaUkHJRbaIEAF4SWhrrX7GjROn3pXPsh3RSk/exec';
+    // Link mới của Minh đã được thay vào đây
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwzkGgWH482UK4SJB4g1N0EwGgUpPqYnQvXTQdsk58k8u9YRn5TyMLuQdBgRvtxN_Ml/exec';
     let userNow = "";
 
     function switchAuth(t) {
@@ -114,7 +112,7 @@
     async function runAuth(type) {
         const msg = document.getElementById('auth-status');
         msg.style.color = "blue";
-        msg.innerText = "Đang xác thực...";
+        msg.innerText = "Đang kiểm tra hệ thống...";
 
         let user = type === 'login' ? '' : document.getElementById('su-name').value;
         let email = type === 'login' ? document.getElementById('li-email').value : document.getElementById('su-email').value;
@@ -122,26 +120,28 @@
 
         if (!email || !pass || (type === 'signup' && !user)) {
             msg.style.color = "red";
-            msg.innerText = "Nhập thiếu rồi kìa!";
+            msg.innerText = "Điền thiếu thông tin rồi Minh!";
             return;
         }
 
         const params = new URLSearchParams({ action: type, user: user, email: email, pass: pass });
 
         try {
+            // Dùng GET để lách luật CORS và đọc được phản hồi từ Sheets
             const response = await fetch(`${scriptURL}?${params.toString()}`);
             const result = await response.text();
 
-            if (result === "EXIST") {
+            if (result === "GMAIL_EXISTS") {
                 msg.style.color = "red";
-                msg.innerText = "Gmail này đã tồn tại!";
-            } else if (result === "NOT_FOUND") {
+                msg.innerText = "Lỗi: Gmail này đã có người dùng!";
+            } else if (result === "AUTH_FAILED") {
                 msg.style.color = "red";
-                msg.innerText = "Sai Gmail hoặc mật khẩu!";
-            } else if (result === "SUCCESS" || result.startsWith("OK")) {
+                msg.innerText = "Lỗi: Sai Gmail hoặc mật khẩu!";
+            } else if (result === "SUCCESS" || result.startsWith("AUTH_OK")) {
                 userNow = type === 'signup' ? user : result.split('|')[1];
                 msg.style.color = "green";
-                msg.innerText = "Thành công!";
+                msg.innerText = "Thành công! Đang vào...";
+                
                 setTimeout(() => {
                     document.getElementById('u-name').innerText = userNow;
                     document.getElementById('u-email').innerText = email;
@@ -156,7 +156,7 @@
     }
 
     function submitPost() {
-        alert("Đang gửi bài lên Sheets...");
+        alert("Đang gửi bài lên Sheets của Minh...");
     }
 </script>
 </body>
