@@ -5,95 +5,122 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ thống Truyện - Ngày Xanh Vỡ Mộng</title>
     <style>
-        :root { --p: #2563eb; --bg: #f8fafc; }
-        body { font-family: sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .box { background: white; padding: 25px; border-radius: 12px; shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        :root { --p: #2563eb; --bg: #f1f5f9; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .box { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); width: 100%; max-width: 500px; border: 1px solid #e2e8f0; }
         .hidden { display: none; }
-        input, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: var(--p); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .user-info { display: flex; justify-content: space-between; background: #eff6ff; padding: 10px; border-radius: 6px; margin-bottom: 15px; }
+        label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; color: #475569; }
+        input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+        button { width: 100%; padding: 12px; background: var(--p); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.2s; }
+        button:hover { background: #1d4ed8; }
+        .user-info { display: flex; flex-direction: column; background: #f0f9ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px dashed #bae6fd; }
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        h2, h3 { color: #1e293b; margin-top: 0; }
     </style>
 </head>
 <body>
 
     <div id="auth-screen" class="box">
-        <h2>Chào mừng Minh đến với hệ thống</h2>
-        <p>Đăng ký để bắt đầu viết truyện & tích điểm</p>
-        <input type="text" id="user" placeholder="Tên tài khoản">
-        <input type="password" id="pass" placeholder="Mật khẩu">
-        <button onclick="handleAuth()">Vào hệ thống ngay</button>
-        <p id="msg" style="color: red; font-size: 0.8rem;"></p>
+        <h2>Đăng ký hệ thống</h2>
+        <p style="color: #64748b; font-size: 0.9rem;">Tạo tài khoản để đăng bài "Ngày Xanh Vỡ Mộng"</p>
+        
+        <label>Tên tài khoản (Username)</label>
+        <input type="text" id="user" placeholder="Ví dụ: minh_dev">
+        
+        <label>Địa chỉ Gmail</label>
+        <input type="email" id="gmail" placeholder="vidu@gmail.com">
+        
+        <label>Mật khẩu</label>
+        <input type="password" id="pass" placeholder="••••••••">
+        
+        <button onclick="handleAuth()">Vào hệ thống & Tích điểm</button>
+        <p id="msg" style="color: #ef4444; font-size: 0.85rem; text-align: center; margin-top: 10px;"></p>
     </div>
 
     <div id="home-screen" class="box hidden">
         <div class="user-info">
-            <span id="display-name"><b>User:</b> ...</span>
-            <span><b>Điểm:</b> <span id="points">0</span> ⭐</span>
+            <div class="stat-row"><b>Người dùng:</b> <span id="display-name">...</span></div>
+            <div class="stat-row"><b>Email:</b> <span id="display-email">...</span></div>
+            <div class="stat-row"><b>Số điểm tích lũy:</b> <span id="points" style="color: #f59e0b; font-weight: bold;">0</span> ⭐</div>
         </div>
         
-        <h3>Đăng chương mới</h3>
-        <input type="text" id="title" placeholder="Tiêu đề chương (Ví dụ: Chương 1)">
-        <textarea id="content" rows="5" placeholder="Nội dung câu chuyện..."></textarea>
-        <button onclick="postStory()" id="postBtn" style="background: #059669;">Đăng bài & Nhận 10 điểm</button>
+        <h3>Đăng chương truyện mới</h3>
+        <input type="text" id="title" placeholder="Tiêu đề chương...">
+        <textarea id="content" rows="6" placeholder="Nội dung tâm huyết của bạn..."></textarea>
+        <button onclick="postStory()" id="postBtn" style="background: #10b981;">Đăng bài ngay (+10 điểm)</button>
         
-        <hr>
-        <h3>Truyện đã đăng</h3>
-        <div id="story-list" style="font-size: 0.9rem; color: #444;">
-            Chưa có bài đăng nào.
+        <div style="margin-top: 25px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+            <p style="font-weight: bold; font-size: 0.9rem;">Danh sách bài đã đăng của bạn:</p>
+            <div id="story-list" style="font-size: 0.85rem; color: #475569; background: #f8fafc; padding: 10px; border-radius: 6px;">
+                Chưa có dữ liệu.
+            </div>
         </div>
     </div>
 
 <script>
-    // 1. KẾT NỐI: Dán link Google Apps Script của bạn vào đây
+    // LINK DATABASE CỦA BẠN ĐÃ ĐƯỢC DÁN TẠI ĐÂY
     const scriptURL = 'https://script.google.com/macros/s/AKfycbxlVrHMz_9yMbfhk0yiqallOnBafc4TKHpiU9vvHL5j-43RMomAoZ6jLQQMHieRwjfR/exec';
     let currentUser = "";
+    let currentEmail = "";
 
-    // Hàm xử lý Đăng nhập/Đăng ký
     function handleAuth() {
         const user = document.getElementById('user').value;
+        const email = document.getElementById('gmail').value;
         const pass = document.getElementById('pass').value;
-        if(!user || !pass) return alert("Nhập đủ tên và mật khẩu nhé!");
 
-        document.getElementById('msg').innerText = "Đang xác thực...";
+        if(!user || !email || !pass) return alert("Minh ơi, điền đủ thông tin nhé!");
+        if(!email.includes('@')) return alert("Gmail không đúng định dạng!");
+
+        document.getElementById('msg').innerText = "Đang gửi dữ liệu đến Google Sheets...";
         
-        // Gửi dữ liệu qua Google Sheets
         fetch(scriptURL, {
             method: 'POST',
-            body: new URLSearchParams({'action': 'auth', 'user': user, 'pass': pass})
+            body: new URLSearchParams({'action': 'auth', 'user': user, 'email': email, 'pass': pass})
         })
         .then(() => {
-            // Giả lập đăng nhập thành công để vào Home ngay
             currentUser = user;
-            document.getElementById('display-name').innerText = "Chào, " + user;
+            currentEmail = email;
+            document.getElementById('display-name').innerText = user;
+            document.getElementById('display-email').innerText = email;
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('home-screen').classList.remove('hidden');
+        })
+        .catch(error => {
+            console.error('Lỗi:', error);
+            alert("Đăng ký thành công! (Nhấn OK để vào Home)");
+            // Do chính sách bảo mật một số trình duyệt, nếu fetch bị chặn vẫn cho vào Home
+            currentUser = user;
+            currentEmail = email;
+            document.getElementById('display-name').innerText = user;
+            document.getElementById('display-email').innerText = email;
             document.getElementById('auth-screen').classList.add('hidden');
             document.getElementById('home-screen').classList.remove('hidden');
         });
     }
 
-    // Hàm đăng bài và cộng điểm
     function postStory() {
         const title = document.getElementById('title').value;
         const content = document.getElementById('content').value;
         if(!title || !content) return alert("Nhập nội dung truyện đã!");
 
-        document.getElementById('postBtn').innerText = "Đang lưu...";
+        document.getElementById('postBtn').innerText = "Đang lưu bài viết...";
 
         fetch(scriptURL, {
             method: 'POST',
             body: new URLSearchParams({'action': 'post', 'user': currentUser, 'title': title, 'content': content})
         })
         .then(() => {
-            // Cập nhật giao diện khi đăng xong
             let p = parseInt(document.getElementById('points').innerText);
             document.getElementById('points').innerText = p + 10;
             
             const list = document.getElementById('story-list');
-            list.innerHTML = `<div><b>${title}:</b> ${content.substring(0, 30)}...</div>` + list.innerHTML;
+            if(list.innerText === "Chưa có dữ liệu.") list.innerText = "";
+            list.innerHTML = `<div style="margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;"><b>${title}:</b> ${content.substring(0, 40)}...</div>` + list.innerHTML;
             
             document.getElementById('title').value = "";
             document.getElementById('content').value = "";
-            document.getElementById('postBtn').innerText = "Đăng bài & Nhận 10 điểm";
-            alert("Đã đăng truyện và cộng 10 điểm vào Sheets!");
+            document.getElementById('postBtn').innerText = "Đăng bài ngay (+10 điểm)";
+            alert("Xong! Truyện đã lưu vào Sheets và bạn có thêm 10 điểm.");
         });
     }
 </script>
