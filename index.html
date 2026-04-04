@@ -7,6 +7,8 @@
     <style>
         :root { --p: #2563eb; --s: #1e293b; --bg: #f8fafc; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; overflow: hidden; }
+        
+        /* MÀN HÌNH CHÀO MỪNG */
         #auth-screen { display: flex; align-items: center; justify-content: center; height: 100vh; }
         .auth-box { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
@@ -14,14 +16,20 @@
         .tabs button.active { background: var(--p); color: white; font-weight: bold; }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; }
         .btn-go { width: 100%; padding: 15px; background: var(--p); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+
+        /* GIAO DIỆN CHÍNH */
         #main-app { display: none; height: 100vh; flex-direction: column; }
         .nav { background: var(--p); color: white; padding: 15px; display: flex; align-items: center; font-weight: bold; font-size: 1.2rem; }
         .menu-btn { font-size: 24px; cursor: pointer; margin-right: 15px; }
+
+        /* SIDEBAR */
         .sidebar { position: fixed; left: -280px; top: 0; width: 260px; height: 100%; background: var(--s); color: white; transition: 0.3s; z-index: 1000; padding-top: 60px; }
         .sidebar.open { left: 0; }
         .sidebar a { display: block; padding: 15px 25px; color: #cbd5e1; text-decoration: none; border-bottom: 1px solid #334155; cursor: pointer; }
         .sidebar a:hover { background: #334155; color: white; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 999; }
+
+        /* CÁC TRANG CHỨC NĂNG */
         .page { flex: 1; overflow-y: auto; padding: 20px; display: none; }
         .page.active { display: block; }
         .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
@@ -37,17 +45,20 @@
                 <button id="t-login" class="active" onclick="switchAuth('login')">Đăng nhập</button>
                 <button id="t-signup" onclick="switchAuth('signup')">Đăng ký</button>
             </div>
+            
             <div id="f-login">
-                <input type="email" id="li-email" placeholder="Gmail">
+                <input type="email" id="li-email" placeholder="Nhập Gmail">
                 <input type="password" id="li-pass" placeholder="Mật khẩu">
                 <button class="btn-go" onclick="runAuth('login')">Đăng nhập</button>
             </div>
+
             <div id="f-signup" style="display:none">
-                <input type="text" id="su-name" placeholder="Tên hiển thị">
-                <input type="email" id="su-email" placeholder="Gmail">
+                <input type="text" id="su-name" placeholder="Tên hiển thị của bạn">
+                <input type="email" id="su-email" placeholder="Nhập Gmail (@gmail.com)">
                 <input type="password" id="su-pass" placeholder="Mật khẩu">
                 <button class="btn-go" onclick="runAuth('signup')">Tạo tài khoản</button>
             </div>
+            
             <p id="auth-status" style="font-size: 0.85rem; margin-top:10px; font-weight: bold;"></p>
         </div>
     </div>
@@ -57,34 +68,43 @@
             <div class="menu-btn" onclick="toggleMenu()">☰</div>
             <div id="page-title">Trang chủ</div>
         </div>
+
         <div id="sidebar" class="sidebar">
             <a onclick="goPage('home', 'Trang chủ')">🏠 Trang chủ</a>
-            <a onclick="goPage('friend', 'Add Friend')">👤 Add Friend</a>
             <a onclick="goPage('post', 'Đăng truyện')">✍️ Đăng truyện</a>
             <a onclick="goPage('quest', 'Daily Quest')">📜 Daily Quest</a>
             <a onclick="goPage('shop', 'Đổi điểm')">💰 Đổi điểm</a>
             <a onclick="location.reload()" style="color:#f87171">🚪 Đăng xuất</a>
         </div>
         <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
+
         <div id="home" class="page active">
             <div class="card">
                 <h3>Chào mừng <span id="u-name">...</span>!</h3>
                 <p>Gmail: <span id="u-email">...</span></p>
                 <p>Số dư: <b style="color:orange">100 ⭐</b></p>
             </div>
+            <div class="card">
+                <h4>Thông báo mới</h4>
+                <p>Chào mừng Minh Anh đã quay trở lại dự án!</p>
+            </div>
         </div>
+
         <div id="post" class="page">
             <div class="card">
                 <h3>Viết chương mới</h3>
                 <input type="text" id="p-title" placeholder="Tiêu đề chương">
                 <textarea id="p-content" rows="8" placeholder="Viết truyện tại đây..."></textarea>
-                <button class="btn-go" onclick="submitPost()" style="background:#10b981">Đăng truyện</button>
+                <button class="btn-go" onclick="submitPost()" style="background:#10b981">Đăng truyện & Nhận điểm</button>
             </div>
         </div>
+
+        <div id="quest" class="page"><div class="card"><h3>Nhiệm vụ hàng ngày</h3><p>Tính năng sẽ sớm ra mắt.</p></div></div>
+        <div id="shop" class="page"><div class="card"><h3>Cửa hàng đổi Robux</h3><p>1000 ⭐ = 10 Robux</p></div></div>
     </div>
 
 <script>
-    // Link mới của Minh đã được thay vào đây
+    // LINK WEB APP MỚI NHẤT CỦA MINH
     const scriptURL = 'https://script.google.com/macros/s/AKfycbwzkGgWH482UK4SJB4g1N0EwGgUpPqYnQvXTQdsk58k8u9YRn5TyMLuQdBgRvtxN_Ml/exec';
     let userNow = "";
 
@@ -112,35 +132,44 @@
     async function runAuth(type) {
         const msg = document.getElementById('auth-status');
         msg.style.color = "blue";
-        msg.innerText = "Đang kiểm tra hệ thống...";
+        msg.innerText = "Đang xử lý dữ liệu...";
 
         let user = type === 'login' ? '' : document.getElementById('su-name').value;
         let email = type === 'login' ? document.getElementById('li-email').value : document.getElementById('su-email').value;
         let pass = type === 'login' ? document.getElementById('li-pass').value : document.getElementById('su-pass').value;
 
+        // KIỂM TRA ĐẦU VÀO
         if (!email || !pass || (type === 'signup' && !user)) {
             msg.style.color = "red";
-            msg.innerText = "Điền thiếu thông tin rồi Minh!";
+            msg.innerText = "Lỗi: Không được để trống thông tin!";
+            return;
+        }
+
+        // KIỂM TRA ĐUÔI @GMAIL.COM
+        if (!email.toLowerCase().endsWith("@gmail.com")) {
+            msg.style.color = "red";
+            msg.innerText = "Lỗi: Gmail phải có đuôi @gmail.com!";
             return;
         }
 
         const params = new URLSearchParams({ action: type, user: user, email: email, pass: pass });
 
         try {
-            // Dùng GET để lách luật CORS và đọc được phản hồi từ Sheets
             const response = await fetch(`${scriptURL}?${params.toString()}`);
             const result = await response.text();
 
             if (result === "GMAIL_EXISTS") {
                 msg.style.color = "red";
-                msg.innerText = "Lỗi: Gmail này đã có người dùng!";
-            } else if (result === "AUTH_FAILED") {
+                msg.innerText = "Lỗi: Gmail này đã được đăng ký!";
+            } 
+            else if (result === "AUTH_FAILED") {
                 msg.style.color = "red";
-                msg.innerText = "Lỗi: Sai Gmail hoặc mật khẩu!";
-            } else if (result === "SUCCESS" || result.startsWith("AUTH_OK")) {
+                msg.innerText = "Lỗi: Sai tài khoản hoặc mật khẩu!";
+            } 
+            else if (result === "SUCCESS" || result.startsWith("AUTH_OK")) {
                 userNow = type === 'signup' ? user : result.split('|')[1];
                 msg.style.color = "green";
-                msg.innerText = "Thành công! Đang vào...";
+                msg.innerText = "Xác thực thành công!";
                 
                 setTimeout(() => {
                     document.getElementById('u-name').innerText = userNow;
@@ -151,12 +180,12 @@
             }
         } catch (e) {
             msg.style.color = "red";
-            msg.innerText = "Lỗi kết nối Server!";
+            msg.innerText = "Lỗi kết nối Server! Thử lại sau.";
         }
     }
 
     function submitPost() {
-        alert("Đang gửi bài lên Sheets của Minh...");
+        alert("Đang gửi chương truyện lên hệ thống...");
     }
 </script>
 </body>
