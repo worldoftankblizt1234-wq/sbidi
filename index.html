@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S-Bidi: Ngày Xanh Vỡ Mộng</title>
+    <title>nhôm</title>
     <style>
         :root { --p: #2563eb; --s: #1e293b; --bg: #f8fafc; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; overflow: hidden; }
         
-        /* MÀN HÌNH CHÀO MỪNG */
+        /* AUTH SCREEN */
         #auth-screen { display: flex; align-items: center; justify-content: center; height: 100vh; }
         .auth-box { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
@@ -16,20 +16,17 @@
         .tabs button.active { background: var(--p); color: white; font-weight: bold; }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; }
         .btn-go { width: 100%; padding: 15px; background: var(--p); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-go:disabled { background: #94a3b8; cursor: not-allowed; }
 
-        /* GIAO DIỆN CHÍNH */
+        /* MAIN APP */
         #main-app { display: none; height: 100vh; flex-direction: column; }
         .nav { background: var(--p); color: white; padding: 15px; display: flex; align-items: center; font-weight: bold; font-size: 1.2rem; }
         .menu-btn { font-size: 24px; cursor: pointer; margin-right: 15px; }
-
-        /* SIDEBAR */
         .sidebar { position: fixed; left: -280px; top: 0; width: 260px; height: 100%; background: var(--s); color: white; transition: 0.3s; z-index: 1000; padding-top: 60px; }
         .sidebar.open { left: 0; }
         .sidebar a { display: block; padding: 15px 25px; color: #cbd5e1; text-decoration: none; border-bottom: 1px solid #334155; cursor: pointer; }
         .sidebar a:hover { background: #334155; color: white; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 999; }
-
-        /* CÁC TRANG CHỨC NĂNG */
         .page { flex: 1; overflow-y: auto; padding: 20px; display: none; }
         .page.active { display: block; }
         .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
@@ -47,16 +44,16 @@
             </div>
             
             <div id="f-login">
-                <input type="email" id="li-email" placeholder="Nhập Gmail">
+                <input type="email" id="li-email" placeholder="Gmail của bạn">
                 <input type="password" id="li-pass" placeholder="Mật khẩu">
-                <button class="btn-go" onclick="runAuth('login')">Đăng nhập</button>
+                <button class="btn-go" id="btn-login" onclick="runAuth('login')">Đăng nhập</button>
             </div>
 
             <div id="f-signup" style="display:none">
-                <input type="text" id="su-name" placeholder="Tên hiển thị của bạn">
-                <input type="email" id="su-email" placeholder="Nhập Gmail (@gmail.com)">
-                <input type="password" id="su-pass" placeholder="Mật khẩu">
-                <button class="btn-go" onclick="runAuth('signup')">Tạo tài khoản</button>
+                <input type="text" id="su-name" placeholder="Tên hiển thị">
+                <input type="email" id="su-email" placeholder="Gmail (@gmail.com)">
+                <input type="password" id="su-pass" placeholder="Mật khẩu (ít nhất 6 ký tự)">
+                <button class="btn-go" id="btn-signup" onclick="runAuth('signup')">Tạo tài khoản</button>
             </div>
             
             <p id="auth-status" style="font-size: 0.85rem; margin-top:10px; font-weight: bold;"></p>
@@ -68,12 +65,10 @@
             <div class="menu-btn" onclick="toggleMenu()">☰</div>
             <div id="page-title">Trang chủ</div>
         </div>
-
         <div id="sidebar" class="sidebar">
             <a onclick="goPage('home', 'Trang chủ')">🏠 Trang chủ</a>
             <a onclick="goPage('post', 'Đăng truyện')">✍️ Đăng truyện</a>
-            <a onclick="goPage('quest', 'Daily Quest')">📜 Daily Quest</a>
-            <a onclick="goPage('shop', 'Đổi điểm')">💰 Đổi điểm</a>
+            <a onclick="goPage('quest', 'Nhiệm vụ')">📜 Nhiệm vụ</a>
             <a onclick="location.reload()" style="color:#f87171">🚪 Đăng xuất</a>
         </div>
         <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
@@ -81,12 +76,8 @@
         <div id="home" class="page active">
             <div class="card">
                 <h3>Chào mừng <span id="u-name">...</span>!</h3>
-                <p>Gmail: <span id="u-email">...</span></p>
+                <p>Email: <span id="u-email">...</span></p>
                 <p>Số dư: <b style="color:orange">100 ⭐</b></p>
-            </div>
-            <div class="card">
-                <h4>Thông báo mới</h4>
-                <p>Chào mừng Minh Anh đã quay trở lại dự án!</p>
             </div>
         </div>
 
@@ -94,17 +85,14 @@
             <div class="card">
                 <h3>Viết chương mới</h3>
                 <input type="text" id="p-title" placeholder="Tiêu đề chương">
-                <textarea id="p-content" rows="8" placeholder="Viết truyện tại đây..."></textarea>
-                <button class="btn-go" onclick="submitPost()" style="background:#10b981">Đăng truyện & Nhận điểm</button>
+                <textarea id="p-content" rows="8" placeholder="Nội dung truyện..."></textarea>
+                <button class="btn-go" style="background:#10b981">Đăng bài</button>
             </div>
         </div>
-
-        <div id="quest" class="page"><div class="card"><h3>Nhiệm vụ hàng ngày</h3><p>Tính năng sẽ sớm ra mắt.</p></div></div>
-        <div id="shop" class="page"><div class="card"><h3>Cửa hàng đổi Robux</h3><p>1000 ⭐ = 10 Robux</p></div></div>
     </div>
 
 <script>
-    // LINK WEB APP MỚI NHẤT CỦA MINH
+    // LINK WEB APP CỦA MINH
     const scriptURL = 'https://script.google.com/macros/s/AKfycbwzkGgWH482UK4SJB4g1N0EwGgUpPqYnQvXTQdsk58k8u9YRn5TyMLuQdBgRvtxN_Ml/exec';
     let userNow = "";
 
@@ -131,26 +119,39 @@
 
     async function runAuth(type) {
         const msg = document.getElementById('auth-status');
+        const btnId = type === 'login' ? 'btn-login' : 'btn-signup';
+        const btn = document.getElementById(btnId);
+        
         msg.style.color = "blue";
-        msg.innerText = "Đang xử lý dữ liệu...";
+        msg.innerText = "Đang xử lý...";
 
-        let user = type === 'login' ? '' : document.getElementById('su-name').value;
-        let email = type === 'login' ? document.getElementById('li-email').value : document.getElementById('su-email').value;
-        let pass = type === 'login' ? document.getElementById('li-pass').value : document.getElementById('su-pass').value;
+        // Lấy dữ liệu và làm sạch khoảng trắng
+        let user = type === 'login' ? '' : document.getElementById('su-name').value.trim();
+        let email = (type === 'login' ? document.getElementById('li-email').value : document.getElementById('su-email').value).trim();
+        let pass = (type === 'login' ? document.getElementById('li-pass').value : document.getElementById('su-pass').value).trim();
 
-        // KIỂM TRA ĐẦU VÀO
+        // Kiểm tra bảo mật cơ bản
         if (!email || !pass || (type === 'signup' && !user)) {
             msg.style.color = "red";
-            msg.innerText = "Lỗi: Không được để trống thông tin!";
+            msg.innerText = "Lỗi: Không được bỏ trống thông tin!";
             return;
         }
 
-        // KIỂM TRA ĐUÔI @GMAIL.COM
-        if (!email.toLowerCase().endsWith("@gmail.com")) {
+        if (pass.length < 6) {
             msg.style.color = "red";
-            msg.innerText = "Lỗi: Gmail phải có đuôi @gmail.com!";
+            msg.innerText = "Lỗi: Mật khẩu phải có ít nhất 6 ký tự!";
             return;
         }
+
+        if (!email.toLowerCase().endsWith("@gmail.com")) {
+            msg.style.color = "red";
+            msg.innerText = "Lỗi: Email phải có đuôi @gmail.com!";
+            return;
+        }
+
+        // Khóa nút để chống Spam
+        btn.disabled = true;
+        btn.innerText = "Vui lòng chờ...";
 
         const params = new URLSearchParams({ action: type, user: user, email: email, pass: pass });
 
@@ -160,17 +161,14 @@
 
             if (result === "GMAIL_EXISTS") {
                 msg.style.color = "red";
-                msg.innerText = "Lỗi: Gmail này đã được đăng ký!";
-            } 
-            else if (result === "AUTH_FAILED") {
+                msg.innerText = "Lỗi: Gmail này đã tồn tại trong hệ thống!";
+            } else if (result === "AUTH_FAILED") {
                 msg.style.color = "red";
                 msg.innerText = "Lỗi: Sai tài khoản hoặc mật khẩu!";
-            } 
-            else if (result === "SUCCESS" || result.startsWith("AUTH_OK")) {
+            } else if (result === "SUCCESS" || result.startsWith("AUTH_OK")) {
                 userNow = type === 'signup' ? user : result.split('|')[1];
                 msg.style.color = "green";
-                msg.innerText = "Xác thực thành công!";
-                
+                msg.innerText = "Thành công!";
                 setTimeout(() => {
                     document.getElementById('u-name').innerText = userNow;
                     document.getElementById('u-email').innerText = email;
@@ -180,12 +178,12 @@
             }
         } catch (e) {
             msg.style.color = "red";
-            msg.innerText = "Lỗi kết nối Server! Thử lại sau.";
+            msg.innerText = "Lỗi: Không thể kết nối tới Server!";
+        } finally {
+            // Mở lại nút sau khi xong
+            btn.disabled = false;
+            btn.innerText = type === 'login' ? "Đăng nhập" : "Tạo tài khoản";
         }
-    }
-
-    function submitPost() {
-        alert("Đang gửi chương truyện lên hệ thống...");
     }
 </script>
 </body>
