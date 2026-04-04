@@ -3,17 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S-Bidi: Full Tính Năng</title>
+    <title>S-Bidi: Cộng Đồng Lý Tự Trọng</title>
     <style>
-        :root { --p: #2563eb; --s: #1e293b; --bg: #f8fafc; --accent: #8b5cf6; --orange: #f59e0b; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; overflow: hidden; }
+        :root { --p: #2563eb; --s: #1e293b; --bg: #f8fafc; --accent: #8b5cf6; --orange: #f59e0b; --red: #ef4444; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; overflow: hidden; }
         
-        /* AUTH & COMMON */
+        /* AUTH SECTION - QUAN TRỌNG: ĐÃ THÊM LẠI SIGN UP */
         #auth-screen { display: flex; align-items: center; justify-content: center; height: 100vh; background: linear-gradient(135deg, #2563eb, #8b5cf6); }
         .auth-box { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); width: 90%; max-width: 400px; text-align: center; }
-        input, textarea, .btn-go { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #cbd5e1; box-sizing: border-box; outline: none; }
+        .auth-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; }
+        .auth-tabs button { flex: 1; padding: 10px; border: none; background: none; cursor: pointer; font-weight: bold; color: #64748b; }
+        .auth-tabs button.active { color: var(--p); border-bottom: 3px solid var(--p); }
+
+        input, textarea, select, .btn-go { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #cbd5e1; box-sizing: border-box; outline: none; }
         .btn-go { background: var(--p); color: white; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; }
-        
+
         /* MAIN APP */
         #main-app { display: none; height: 100vh; flex-direction: column; }
         .nav { background: var(--p); color: white; padding: 15px; display: flex; align-items: center; font-weight: bold; }
@@ -26,9 +30,12 @@
         .page.active { display: block; }
         .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 
-        /* SHOP & REDEEM */
-        .shop-item { border: 2px dashed var(--orange); padding: 20px; border-radius: 15px; text-align: center; background: #fffbeb; }
-        .btn-redeem { background: var(--orange); color: white; padding: 10px 20px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        /* POSTS & COMMENTS */
+        .post-card { border-left: 5px solid var(--p); padding: 15px; background: #fff; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .cmt-box { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ddd; font-size: 0.85rem; }
+        .cmt-input { display: flex; gap: 5px; margin-top: 8px; }
+        .cmt-input input { padding: 6px; margin: 0; border-radius: 5px; font-size: 0.8rem; }
+        .cmt-input button { width: 60px; background: var(--s); color: white; border: none; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -36,10 +43,24 @@
     <div id="auth-screen">
         <div class="auth-box">
             <h2 style="color: var(--p)">S-Bidi System</h2>
-            <input type="email" id="li-email" placeholder="Gmail">
-            <input type="password" id="li-pass" placeholder="Mật khẩu">
-            <button class="btn-go" onclick="runAuth()">Vào S-Bidi</button>
-            <p id="auth-status" style="font-size: 0.8rem; margin-top:10px; font-weight: bold;"></p>
+            <div class="auth-tabs">
+                <button id="t-login" class="active" onclick="toggleAuth('login')">ĐĂNG NHẬP</button>
+                <button id="t-signup" onclick="toggleAuth('signup')">ĐĂNG KÝ</button>
+            </div>
+            
+            <div id="f-login">
+                <input type="email" id="li-email" placeholder="Gmail">
+                <input type="password" id="li-pass" placeholder="Mật khẩu">
+                <button class="btn-go" onclick="runAuth('login')">Vào Hệ Thống</button>
+            </div>
+
+            <div id="f-signup" style="display:none">
+                <input type="text" id="su-name" placeholder="Tên của bạn">
+                <input type="email" id="su-email" placeholder="Gmail học sinh">
+                <input type="password" id="su-pass" placeholder="Mật khẩu (6+ ký tự)">
+                <button class="btn-go" style="background:var(--accent)" onclick="runAuth('signup')">Tạo Tài Khoản</button>
+            </div>
+            <p id="auth-status" style="font-size: 0.85rem; margin-top:10px; font-weight: bold;"></p>
         </div>
     </div>
 
@@ -53,39 +74,47 @@
             <a onclick="goPage('home', '🏠 Trang chủ')">🏠 Trang chủ</a>
             <a onclick="goPage('commu', '🌐 Cộng đồng')">🌐 Cộng đồng</a>
             <a onclick="goPage('noti', '🔔 Thông báo')">🔔 Thông báo</a>
-            <a onclick="goPage('shop', '🎁 Đổi quà (Redeem)')">🎁 Đổi quà (Redeem)</a>
+            <a onclick="goPage('friend', '👥 Kết bạn')">👥 Kết bạn</a>
+            <a onclick="goPage('shop', '🎁 Đổi điểm (Redeem)')">🎁 Đổi điểm (Redeem)</a>
             <a onclick="goPage('post', '✍️ Đăng bài')">✍️ Đăng bài</a>
-            <a onclick="location.reload()" style="color:#f87171">🚪 Thoát</a>
+            <a onclick="location.reload()" style="color:var(--red)">🚪 Thoát</a>
         </div>
         <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
 
         <div id="home" class="page active">
             <div class="card">
                 <h3>Chào, <span id="u-name" style="color:var(--p)">...</span>!</h3>
-                <p>Số dư: <b style="color:orange; font-size: 1.2rem;"><span id="u-points">0</span> ⭐</b></p>
+                <p>Số dư: <b style="color:var(--orange)"><span id="u-points">0</span> ⭐</b></p>
+                <p style="font-size:0.8rem; color:gray">Chào mừng bạn đến với cộng đồng Lý Tự Trọng.</p>
             </div>
         </div>
 
-        <div id="shop" class="page">
-            <div class="card shop-item">
-                <h2 style="color:var(--orange)">💰 Cửa hàng quà tặng</h2>
-                <p>Dùng điểm tích lũy để đổi vật phẩm</p>
-                <div style="border-top: 1px solid #fed7aa; margin: 15px 0; padding-top: 15px;">
-                    <h3>1.000 ⭐ = 10 Robux</h3>
-                    <p style="font-size: 0.8rem; color: #9a3412;">(Admin sẽ duyệt và gửi quà sau 24h)</p>
-                    <button class="btn-redeem" onclick="doRedeem()">ĐỔI NGAY</button>
-                </div>
+        <div id="commu" class="page">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between"><h3>🌐 Cộng đồng</h3><button onclick="loadPosts()" style="width:auto; padding:5px 10px">Làm mới</button></div>
+                <div id="post-list" style="margin-top:15px"></div>
             </div>
         </div>
 
-        <div id="commu" class="page"><div class="card"><h3>🌐 Cộng đồng</h3><div id="post-list"></div></div></div>
         <div id="noti" class="page"><div class="card"><h3>🔔 Thông báo</h3><div id="noti-list"></div></div></div>
-        <div id="post" class="page"><div class="card"><h3>✍️ Đăng bài</h3><input id="ptitle" placeholder="Tiêu đề"><textarea id="pbody" rows="5"></textarea><button class="btn-go" onclick="sendPost()">Đăng</button></div></div>
+
+        <div id="friend" class="page"><div class="card"><h3>👥 Kết bạn</h3><input type="text" id="fs" placeholder="Tìm tên bạn học..." onkeyup="searchF()"><div id="fl"></div></div></div>
+
+        <div id="shop" class="page"><div class="card" style="text-align:center"><h3>🎁 Cửa hàng</h3><p>1000 ⭐ = 10 Robux</p><button class="btn-go" style="background:var(--orange)" onclick="doRedeem()">ĐỔI NGAY</button></div></div>
+
+        <div id="post" class="page"><div class="card"><h3>✍️ Đăng bài</h3><input id="ptitle" placeholder="Tiêu đề"><textarea id="pbody" rows="5"></textarea><button class="btn-go" onclick="sendPost()">Đăng ngay</button></div></div>
     </div>
 
 <script>
     const scriptURL = 'https://script.google.com/macros/s/AKfycbGu3sOjQwUBNMBQXcZDuGKgPjXzA2TOmjCFNZfWJtDzyinyzS4NZAwOWu-bHKI3v15/exec';
     let myEmail = "";
+
+    function toggleAuth(m) {
+        document.getElementById('f-login').style.display = m==='login'?'block':'none';
+        document.getElementById('f-signup').style.display = m==='signup'?'block':'none';
+        document.getElementById('t-login').className = m==='login'?'active':'';
+        document.getElementById('t-signup').className = m==='signup'?'active':'';
+    }
 
     function toggleMenu() {
         document.getElementById('sidebar').classList.toggle('open');
@@ -101,53 +130,72 @@
         if(document.getElementById('sidebar').classList.contains('open')) toggleMenu();
     }
 
-    // REDEEM FUNCTION
-    async function doRedeem() {
-        if(!confirm("Minh chắc chắn muốn dùng 1000 sao để đổi quà chứ?")) return;
+    async function runAuth(type) {
+        const msg = document.getElementById('auth-status');
+        let e = (type==='login'?document.getElementById('li-email'):document.getElementById('su-email')).value.trim();
+        let p = (type==='login'?document.getElementById('li-pass'):document.getElementById('su-pass')).value.trim();
+        let n = type==='signup'?document.getElementById('su-name').value.trim():'';
+        
+        msg.innerText = "Đang xử lý...";
         try {
-            const res = await fetch(`${scriptURL}?action=redeem&email=${myEmail}`);
+            const res = await fetch(`${scriptURL}?action=${type}&user=${encodeURIComponent(n)}&email=${e}&pass=${encodeURIComponent(p)}`);
             const text = await res.text();
-            if(text === "REDEEM_OK") {
-                alert("🎉 Chúc mừng! Đã gửi yêu cầu đổi quà thành công.");
-                location.reload(); // Load lại để trừ điểm
-            } else {
-                alert("❌ Không đủ điểm rồi Minh ơi, tích cực đăng truyện thêm nhé!");
-            }
-        } catch(e) { alert("Lỗi kết nối!"); }
+            if(text.startsWith("AUTH_OK") || text==="SUCCESS") {
+                if(type==='signup') { alert("Đăng ký xong! Đăng nhập nhé."); toggleAuth('login'); }
+                else {
+                    myEmail = e; let d = text.split('|');
+                    document.getElementById('u-name').innerText = d[1];
+                    document.getElementById('u-points').innerText = d[2];
+                    document.getElementById('auth-screen').style.display = 'none';
+                    document.getElementById('main-app').style.display = 'flex';
+                }
+            } else msg.innerText = "Lỗi thông tin!";
+        } catch(err) { msg.innerText = "Lỗi kết nối!"; }
     }
 
-    async function runAuth() {
-        const email = document.getElementById('li-email').value;
-        const pass = document.getElementById('li-pass').value;
-        const res = await fetch(`${scriptURL}?action=login&email=${email}&pass=${pass}`);
-        const text = await res.text();
-        if(text.startsWith("AUTH_OK")) {
-            myEmail = email; let d = text.split('|');
-            document.getElementById('u-name').innerText = d[1];
-            document.getElementById('u-points').innerText = d[2];
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('main-app').style.display = 'flex';
-        } else alert("Sai tài khoản!");
+    async function loadPosts() {
+        const res = await fetch(`${scriptURL}?action=get_posts`);
+        const posts = await res.json();
+        document.getElementById('post-list').innerHTML = posts.map((p, i) => `
+            <div class="post-card">
+                <h4>${p.title}</h4><p>${p.body}</p>
+                <div class="cmt-box"><div id="cmts-${i}"><i>Bình luận:</i></div>
+                <div class="cmt-input"><input id="in-${i}" placeholder="Viết..."><button onclick="addC(${i})">Gửi</button></div></div>
+            </div>
+        `).join('');
     }
 
-    // GIỮ CÁC HÀM loadNoti, loadPosts...
+    function addC(idx) {
+        let v = document.getElementById('in-'+idx).value;
+        if(!v) return;
+        document.getElementById('cmts-'+idx).innerHTML += `<div><b>Bạn:</b> ${v}</div>`;
+        document.getElementById('in-'+idx).value = "";
+    }
+
     async function loadNoti() {
         const res = await fetch(`${scriptURL}?action=get_notifications`);
         const data = await res.json();
         document.getElementById('noti-list').innerHTML = data.map(n => `<div class="card" style="border-left:5px solid blue"><b>[${n.type}]</b> ${n.content}</div>`).join('');
     }
 
-    async function loadPosts() {
-        const res = await fetch(`${scriptURL}?action=get_posts`);
-        const posts = await res.json();
-        document.getElementById('post-list').innerHTML = posts.map(p => `<div class="card" style="border-left:5px solid #8b5cf6"><h4>${p.title}</h4><p>${p.body}</p></div>`).join('');
+    async function doRedeem() {
+        if(!confirm("Đổi 1000 sao?")) return;
+        const res = await fetch(`${scriptURL}?action=redeem&email=${myEmail}`);
+        const text = await res.text();
+        if(text==="REDEEM_OK") { alert("Thành công!"); location.reload(); } else alert("Không đủ điểm!");
     }
 
     async function sendPost() {
         const t = document.getElementById('ptitle').value;
         const b = document.getElementById('pbody').value;
         await fetch(`${scriptURL}?action=post_content&type=truyen&title=${encodeURIComponent(t)}&body=${encodeURIComponent(b)}&email=${myEmail}`);
-        alert("Xong!"); goPage('commu', 'Cộng đồng');
+        alert("Đã đăng!"); goPage('commu', 'Cộng đồng');
+    }
+
+    function searchF() {
+        let v = document.getElementById('fs').value;
+        if(v.length < 2) return;
+        document.getElementById('fl').innerHTML = `<div style="display:flex; justify-content:space-between; padding:10px"><span>👤 ${v}</span><button onclick="alert('Đã gửi!')">Kết bạn</button></div>`;
     }
 </script>
 </body>
