@@ -7,8 +7,6 @@
     <style>
         :root { --p: #2563eb; --s: #1e293b; --bg: #f8fafc; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; overflow: hidden; }
-        
-        /* 1. MÀN HÌNH CHÀO MỪNG */
         #auth-screen { display: flex; align-items: center; justify-content: center; height: 100vh; }
         .auth-box { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
@@ -16,20 +14,14 @@
         .tabs button.active { background: var(--p); color: white; font-weight: bold; }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; }
         .btn-go { width: 100%; padding: 15px; background: var(--p); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-
-        /* 2. GIAO DIỆN CHÍNH */
         #main-app { display: none; height: 100vh; flex-direction: column; }
         .nav { background: var(--p); color: white; padding: 15px; display: flex; align-items: center; font-weight: bold; font-size: 1.2rem; }
         .menu-btn { font-size: 24px; cursor: pointer; margin-right: 15px; }
-
-        /* SIDEBAR */
         .sidebar { position: fixed; left: -280px; top: 0; width: 260px; height: 100%; background: var(--s); color: white; transition: 0.3s; z-index: 1000; padding-top: 60px; }
         .sidebar.open { left: 0; }
         .sidebar a { display: block; padding: 15px 25px; color: #cbd5e1; text-decoration: none; border-bottom: 1px solid #334155; cursor: pointer; }
         .sidebar a:hover { background: #334155; color: white; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 999; }
-
-        /* CÁC TRANG CHỨC NĂNG */
         .page { flex: 1; overflow-y: auto; padding: 20px; display: none; }
         .page.active { display: block; }
         .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
@@ -56,7 +48,7 @@
                 <input type="password" id="su-pass" placeholder="Mật khẩu">
                 <button class="btn-go" onclick="runAuth('signup')">Tạo tài khoản</button>
             </div>
-            <p id="auth-status" style="color:red; font-size: 0.8rem; margin-top:10px"></p>
+            <p id="auth-status" style="font-size: 0.85rem; margin-top:10px; font-weight: bold;"></p>
         </div>
     </div>
 
@@ -65,7 +57,6 @@
             <div class="menu-btn" onclick="toggleMenu()">☰</div>
             <div id="page-title">Trang chủ</div>
         </div>
-
         <div id="sidebar" class="sidebar">
             <a onclick="goPage('home', 'Trang chủ')">🏠 Trang chủ</a>
             <a onclick="goPage('friend', 'Add Friend')">👤 Add Friend</a>
@@ -75,57 +66,28 @@
             <a onclick="location.reload()" style="color:#f87171">🚪 Đăng xuất</a>
         </div>
         <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
-
         <div id="home" class="page active">
             <div class="card">
                 <h3>Chào mừng <span id="u-name">...</span>!</h3>
                 <p>Gmail: <span id="u-email">...</span></p>
                 <p>Số dư: <b style="color:orange">100 ⭐</b></p>
             </div>
-            <div class="card">
-                <h4>Thông báo mới</h4>
-                <p>Hệ thống đang trong quá trình phát triển bởi Minh.</p>
-            </div>
         </div>
-
-        <div id="friend" class="page">
-            <div class="card">
-                <h3>Tìm kiếm bạn bè</h3>
-                <input type="text" placeholder="Nhập tên người dùng...">
-                <button class="btn-go">Tìm kiếm</button>
-            </div>
-        </div>
-
+        <div id="friend" class="page"><div class="card"><h3>Tính năng đang phát triển...</h3></div></div>
         <div id="post" class="page">
             <div class="card">
                 <h3>Viết chương mới</h3>
                 <input type="text" id="p-title" placeholder="Tiêu đề chương">
                 <textarea id="p-content" rows="8" placeholder="Viết truyện tại đây..."></textarea>
-                <button class="btn-go" onclick="submitPost()" style="background:#10b981">Đăng truyện & Nhận điểm</button>
+                <button class="btn-go" onclick="submitPost()" style="background:#10b981">Đăng truyện</button>
             </div>
         </div>
-
-        <div id="quest" class="page">
-            <div class="card">
-                <h3>Nhiệm vụ hôm nay</h3>
-                <p>✅ Điểm danh: +5 ⭐ (Đã nhận)</p>
-                <p>⬜ Đọc 1 chương truyện: +10 ⭐</p>
-                <p>⬜ Đăng 1 chương mới: +20 ⭐</p>
-            </div>
-        </div>
-
-        <div id="shop" class="page">
-            <div class="card">
-                <h3>Cửa hàng đổi Robux</h3>
-                <p>1000 ⭐ = 10 Robux</p>
-                <button class="btn-go" disabled style="background:#94a3b8">Chưa đủ điểm</button>
-            </div>
-        </div>
+        <div id="quest" class="page"><div class="card"><h3>Nhiệm vụ hôm nay</h3><p>✅ Điểm danh: +5 ⭐</p></div></div>
+        <div id="shop" class="page"><div class="card"><h3>Cửa hàng đổi Robux</h3><p>1000 ⭐ = 10 Robux</p></div></div>
     </div>
 
 <script>
-    // DÁN LINK MỚI CỦA BẠN VÀO ĐÂY
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxlVrHMz_9yMbfhk0yiqallOnBafc4TKHpiU9vvHL5j-43RMomAoZ6jLQQMHieRwjfR/exec';
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzT7SQ66UaZbGgOpdB5B6R4xgDKJcn-GaUkHJRbaIEAF4SWhrrX7GjROn3pXPsh3RSk/exec';
     let userNow = "";
 
     function switchAuth(t) {
@@ -133,6 +95,7 @@
         document.getElementById('f-signup').style.display = t === 'signup' ? 'block' : 'none';
         document.getElementById('t-login').className = t === 'login' ? 'active' : '';
         document.getElementById('t-signup').className = t === 'signup' ? 'active' : '';
+        document.getElementById('auth-status').innerText = "";
     }
 
     function toggleMenu() {
@@ -148,78 +111,52 @@
         toggleMenu();
     }
 
-    function runAuth(type) {
-        async function runAuth(type) {
-    const msg = document.getElementById('auth-status');
-    msg.style.color = "blue";
-    msg.innerText = "Đang kiểm tra dữ liệu...";
+    async function runAuth(type) {
+        const msg = document.getElementById('auth-status');
+        msg.style.color = "blue";
+        msg.innerText = "Đang xác thực...";
 
-    let user = type === 'login' ? '' : document.getElementById('su-name').value;
-    let email = type === 'login' ? document.getElementById('li-email').value : document.getElementById('su-email').value;
-    let pass = type === 'login' ? document.getElementById('li-pass').value : document.getElementById('su-pass').value;
+        let user = type === 'login' ? '' : document.getElementById('su-name').value;
+        let email = type === 'login' ? document.getElementById('li-email').value : document.getElementById('su-email').value;
+        let pass = type === 'login' ? document.getElementById('li-pass').value : document.getElementById('su-pass').value;
 
-    // Kiểm tra nhập liệu cơ bản
-    if (!email || !pass || (type === 'signup' && !user)) {
-        msg.style.color = "red";
-        msg.innerText = "Điền thiếu thông tin rồi Minh ơi!";
-        return;
-    }
-
-    // Tạo link có chứa dữ liệu để gửi cho Google
-    const params = new URLSearchParams({ action: type, user: user, email: email, pass: pass });
-
-    try {
-        // Gửi yêu cầu và ĐỢI câu trả lời từ Sheets
-        const response = await fetch(`${scriptURL}?${params.toString()}`);
-        const result = await response.text();
-
-        if (result === "EXIST") {
+        if (!email || !pass || (type === 'signup' && !user)) {
             msg.style.color = "red";
-            msg.innerText = "Lỗi: Gmail này đã tồn tại!";
-        } 
-        else if (result === "NOT_FOUND") {
-            msg.style.color = "red";
-            msg.innerText = "Lỗi: Sai tài khoản hoặc mật khẩu!";
-        } 
-        else if (result === "SUCCESS" || result.startsWith("OK")) {
-            // Lấy tên hiển thị: Nếu đăng ký thì lấy biến user, nếu đăng nhập thì lấy từ Sheets gửi về
-            userNow = type === 'signup' ? user : result.split('|')[1];
-            
-            msg.style.color = "green";
-            msg.innerText = "Xác thực thành công! Đang vào...";
-            
-            setTimeout(() => {
-                document.getElementById('u-name').innerText = userNow;
-                document.getElementById('u-email').innerText = email;
-                document.getElementById('auth-screen').style.display = 'none';
-                document.getElementById('main-app').style.display = 'flex';
-            }, 1000);
+            msg.innerText = "Nhập thiếu rồi kìa!";
+            return;
         }
-    } catch (error) {
-        console.error(error);
-        msg.style.color = "red";
-        msg.innerText = "Lỗi kết nối! Minh kiểm tra lại link Apps Script nhé.";
-    }
-}
-        fetch(scriptURL, {
-            method: 'POST',
-            body: new URLSearchParams({'action': 'auth', 'user': user, 'email': email, 'pass': pass})
-        }).then(() => {
-            userNow = user;
-            document.getElementById('u-name').innerText = user;
-            document.getElementById('u-email').innerText = email;
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('main-app').style.display = 'flex';
-        }).catch(() => {
-            alert("Lỗi kết nối nhưng mình vẫn cho bạn vào Home thử giao diện!");
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('main-app').style.display = 'flex';
-        });
+
+        const params = new URLSearchParams({ action: type, user: user, email: email, pass: pass });
+
+        try {
+            const response = await fetch(`${scriptURL}?${params.toString()}`);
+            const result = await response.text();
+
+            if (result === "EXIST") {
+                msg.style.color = "red";
+                msg.innerText = "Gmail này đã tồn tại!";
+            } else if (result === "NOT_FOUND") {
+                msg.style.color = "red";
+                msg.innerText = "Sai Gmail hoặc mật khẩu!";
+            } else if (result === "SUCCESS" || result.startsWith("OK")) {
+                userNow = type === 'signup' ? user : result.split('|')[1];
+                msg.style.color = "green";
+                msg.innerText = "Thành công!";
+                setTimeout(() => {
+                    document.getElementById('u-name').innerText = userNow;
+                    document.getElementById('u-email').innerText = email;
+                    document.getElementById('auth-screen').style.display = 'none';
+                    document.getElementById('main-app').style.display = 'flex';
+                }, 1000);
+            }
+        } catch (e) {
+            msg.style.color = "red";
+            msg.innerText = "Lỗi kết nối Server!";
+        }
     }
 
     function submitPost() {
-        alert("Truyện đang được gửi lên Sheets của Minh...");
-        // Code gửi bài đăng tương tự runAuth
+        alert("Đang gửi bài lên Sheets...");
     }
 </script>
 </body>
