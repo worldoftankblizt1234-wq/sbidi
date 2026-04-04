@@ -149,11 +149,58 @@
     }
 
     function runAuth(type) {
-        document.getElementById('auth-status').innerText = "Đang kết nối...";
-        let user = type === 'login' ? 'User' : document.getElementById('su-name').value;
-        let email = type === 'login' ? document.getElementById('li-email').value : document.getElementById('su-email').value;
-        let pass = type === 'login' ? document.getElementById('li-pass').value : document.getElementById('su-pass').value;
+        async function runAuth(type) {
+    const msg = document.getElementById('auth-status');
+    msg.style.color = "blue";
+    msg.innerText = "Đang kiểm tra dữ liệu...";
 
+    let user = type === 'login' ? '' : document.getElementById('su-name').value;
+    let email = type === 'login' ? document.getElementById('li-email').value : document.getElementById('su-email').value;
+    let pass = type === 'login' ? document.getElementById('li-pass').value : document.getElementById('su-pass').value;
+
+    // Kiểm tra nhập liệu cơ bản
+    if (!email || !pass || (type === 'signup' && !user)) {
+        msg.style.color = "red";
+        msg.innerText = "Điền thiếu thông tin rồi Minh ơi!";
+        return;
+    }
+
+    // Tạo link có chứa dữ liệu để gửi cho Google
+    const params = new URLSearchParams({ action: type, user: user, email: email, pass: pass });
+
+    try {
+        // Gửi yêu cầu và ĐỢI câu trả lời từ Sheets
+        const response = await fetch(`${scriptURL}?${params.toString()}`);
+        const result = await response.text();
+
+        if (result === "EXIST") {
+            msg.style.color = "red";
+            msg.innerText = "Lỗi: Gmail này đã tồn tại!";
+        } 
+        else if (result === "NOT_FOUND") {
+            msg.style.color = "red";
+            msg.innerText = "Lỗi: Sai tài khoản hoặc mật khẩu!";
+        } 
+        else if (result === "SUCCESS" || result.startsWith("OK")) {
+            // Lấy tên hiển thị: Nếu đăng ký thì lấy biến user, nếu đăng nhập thì lấy từ Sheets gửi về
+            userNow = type === 'signup' ? user : result.split('|')[1];
+            
+            msg.style.color = "green";
+            msg.innerText = "Xác thực thành công! Đang vào...";
+            
+            setTimeout(() => {
+                document.getElementById('u-name').innerText = userNow;
+                document.getElementById('u-email').innerText = email;
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'flex';
+            }, 1000);
+        }
+    } catch (error) {
+        console.error(error);
+        msg.style.color = "red";
+        msg.innerText = "Lỗi kết nối! Minh kiểm tra lại link Apps Script nhé.";
+    }
+}
         fetch(scriptURL, {
             method: 'POST',
             body: new URLSearchParams({'action': 'auth', 'user': user, 'email': email, 'pass': pass})
