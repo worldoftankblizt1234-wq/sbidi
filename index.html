@@ -3,26 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S-Bidi: Kết Nối Lý Tự Trọng</title>
+    <title>S-Bidi: Mạng Xã Hội Lý Tự Trọng</title>
     <style>
         :root { --p: #2563eb; --s: #1e293b; --bg: #f8fafc; --accent: #8b5cf6; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; overflow: hidden; }
         
-        /* AUTH SECTION - QUAN TRỌNG: NƠI HIỆN LẠI SIGN UP */
+        /* AUTH SCREEN */
         #auth-screen { display: flex; align-items: center; justify-content: center; height: 100vh; background: linear-gradient(135deg, #2563eb, #8b5cf6); }
         .auth-box { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); width: 90%; max-width: 400px; text-align: center; }
-        
-        .auth-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
-        .auth-tabs button { flex: 1; padding: 10px; border: none; background: none; cursor: pointer; font-weight: bold; color: #64748b; transition: 0.3s; }
+        .auth-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; }
+        .auth-tabs button { flex: 1; padding: 10px; border: none; background: none; cursor: pointer; font-weight: bold; color: #64748b; }
         .auth-tabs button.active { color: var(--p); border-bottom: 3px solid var(--p); }
 
         input, textarea, .btn-go { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #cbd5e1; box-sizing: border-box; outline: none; }
         .btn-go { background: var(--p); color: white; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; }
-        .btn-go:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4); }
 
-        /* MAIN APP LAYOUT */
+        /* MAIN APP */
         #main-app { display: none; height: 100vh; flex-direction: column; }
-        .nav { background: var(--p); color: white; padding: 15px; display: flex; align-items: center; font-weight: bold; z-index: 100; }
+        .nav { background: var(--p); color: white; padding: 15px; display: flex; align-items: center; font-weight: bold; }
         .sidebar { position: fixed; left: -280px; top: 0; width: 260px; height: 100%; background: var(--s); color: white; transition: 0.3s; z-index: 1000; padding-top: 60px; }
         .sidebar.open { left: 0; }
         .sidebar a { display: block; padding: 15px 25px; color: #cbd5e1; text-decoration: none; cursor: pointer; border-bottom: 1px solid #334155; }
@@ -31,41 +29,46 @@
         .page { flex: 1; overflow-y: auto; padding: 20px; display: none; }
         .page.active { display: block; }
         .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .post-card { border-left: 5px solid var(--p); padding: 15px; background: white; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+        /* COMMUNITY & COMMENT */
+        .post-card { border-left: 5px solid var(--p); padding: 15px; background: #fff; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .tag { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; color: white; text-transform: uppercase; margin-bottom: 5px; display: inline-block; }
+        .tag-truyen { background: var(--accent); }
+        .tag-baitap { background: #10b981; }
+        .comment-section { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ddd; font-size: 0.85rem; }
+        .cmt-item { margin-bottom: 5px; color: #475569; }
+        .cmt-input-group { display: flex; gap: 5px; margin-top: 8px; }
+        .cmt-input-group input { padding: 6px; margin: 0; border-radius: 5px; font-size: 0.8rem; }
+        .cmt-input-group button { width: 60px; padding: 0; font-size: 0.8rem; background: var(--s); color: white; border: none; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div id="auth-screen">
         <div class="auth-box">
-            <h2 style="color: var(--p); margin-bottom: 5px;">S-Bidi System</h2>
-            <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 20px;">Cộng đồng học sinh Lý Tự Trọng</p>
-            
+            <h2 style="color: var(--p)">S-Bidi System</h2>
             <div class="auth-tabs">
-                <button id="tab-login" class="active" onclick="toggleAuth('login')">ĐĂNG NHẬP</button>
-                <button id="tab-signup" onclick="toggleAuth('signup')">ĐĂNG KÝ</button>
+                <button id="t-login" class="active" onclick="toggleAuth('login')">ĐĂNG NHẬP</button>
+                <button id="t-signup" onclick="toggleAuth('signup')">ĐĂNG KÝ</button>
             </div>
-
-            <div id="form-login">
-                <input type="email" id="li-email" placeholder="Gmail của bạn">
+            <div id="f-login">
+                <input type="email" id="li-email" placeholder="Gmail">
                 <input type="password" id="li-pass" placeholder="Mật khẩu">
                 <button class="btn-go" onclick="runAuth('login')">Vào Hệ Thống</button>
             </div>
-
-            <div id="form-signup" style="display: none;">
-                <input type="text" id="su-name" placeholder="Tên hiển thị (VD: Minh Anh)">
+            <div id="f-signup" style="display:none">
+                <input type="text" id="su-name" placeholder="Tên của bạn">
                 <input type="email" id="su-email" placeholder="Gmail (@gmail.com)">
                 <input type="password" id="su-pass" placeholder="Mật khẩu (6+ ký tự)">
-                <button class="btn-go" style="background: var(--accent);" onclick="runAuth('signup')">Tạo Tài Khoản</button>
+                <button class="btn-go" style="background:var(--accent)" onclick="runAuth('signup')">Tạo Tài Khoản</button>
             </div>
-
-            <p id="auth-status" style="font-size: 0.85rem; margin-top:15px; font-weight: bold;"></p>
+            <p id="auth-status" style="font-size: 0.85rem; margin-top:10px; font-weight: bold;"></p>
         </div>
     </div>
 
     <div id="main-app">
         <div class="nav">
-            <div onclick="toggleMenu()" style="cursor:pointer; margin-right:15px; font-size: 1.2rem;">☰</div>
+            <div onclick="toggleMenu()" style="cursor:pointer; margin-right:15px">☰ Menu</div>
             <div id="page-title">Trang chủ</div>
         </div>
 
@@ -81,120 +84,130 @@
 
         <div id="home" class="page active">
             <div class="card">
-                <h3>Xin chào, <span id="u-name" style="color:var(--p)">...</span>!</h3>
-                <p>Số dư: <b style="color:orange; font-size: 1.2rem;"><span id="u-points">0</span> ⭐</b></p>
+                <h3>Chào, <span id="u-name" style="color:var(--p)">...</span>!</h3>
+                <p>Số dư: <b style="color:orange"><span id="u-points">0</span> ⭐</b></p>
             </div>
         </div>
 
         <div id="commu" class="page">
-            <div class="card"><h3>🌐 Cộng đồng</h3><div id="post-list">Đang tải...</div></div>
+            <div class="card">
+                <div style="display:flex; justify-content: space-between; align-items: center;">
+                    <h3>🌐 Cộng đồng S-Bidi</h3>
+                    <button class="btn-go" style="width:auto; padding:5px 15px" onclick="loadPosts()">Làm mới</button>
+                </div>
+                <div id="post-list" style="margin-top:15px">Đang tải bài viết...</div>
+            </div>
         </div>
 
-        <div id="friend" class="page">
-            <div class="card"><h3>👥 Tìm bạn bè</h3><input type="text" id="f-search" placeholder="Tìm tên..." onkeyup="searchFriend()"><div id="friend-list"></div></div>
-        </div>
+        <div id="friend" class="page"><div class="card"><h3>👥 Tìm bạn bè</h3><input type="text" id="fs" placeholder="Tìm tên..." onkeyup="searchFriend()"><div id="fl"></div></div></div>
 
         <div id="post" class="page">
             <div class="card">
-                <h3>✍️ Đăng bài</h3>
-                <input type="text" id="p-title" placeholder="Tiêu đề"><textarea id="p-body" rows="5"></textarea>
+                <h3>✍️ Đăng bài mới</h3>
+                <select id="ptype" style="width:100%; padding:10px; margin-bottom:10px; border-radius:10px;">
+                    <option value="truyen">Đăng truyện (Ngày xanh vỡ mộng)</option>
+                    <option value="baitap">Giải bài tập</option>
+                </select>
+                <input type="text" id="ptitle" placeholder="Tiêu đề"><textarea id="pbody" rows="5" placeholder="Nội dung..."></textarea>
                 <button class="btn-go" onclick="sendPost()">Đăng bài</button>
             </div>
         </div>
+
+        <div id="shop" class="page"><div class="card" style="text-align:center"><h3>💰 Đổi Robux</h3><button class="btn-go" onclick="alert('Đã gửi yêu cầu đổi cho Admin!')" style="background:orange">1000 ⭐ = 10 Robux</button></div></div>
     </div>
 
 <script>
     const scriptURL = 'https://script.google.com/macros/s/AKfycbx1E5AEILNqS505ciis2ADp3mqNGKgIab5iTSs9GNFpA-zG4fIR4MFxpyVbBPCdZfAr/exec';
     let myEmail = "";
 
-    // CHUYỂN ĐỔI LOGIN / SIGNUP
-    function toggleAuth(mode) {
-        document.getElementById('form-login').style.display = (mode === 'login') ? 'block' : 'none';
-        document.getElementById('form-signup').style.display = (mode === 'signup') ? 'block' : 'none';
-        document.getElementById('tab-login').className = (mode === 'login') ? 'active' : '';
-        document.getElementById('tab-signup').className = (mode === 'signup') ? 'active' : '';
-        document.getElementById('auth-status').innerText = "";
+    function toggleAuth(m) {
+        document.getElementById('f-login').style.display = m==='login'?'block':'none';
+        document.getElementById('f-signup').style.display = m==='signup'?'block':'none';
+        document.getElementById('t-login').className = m==='login'?'active':'';
+        document.getElementById('t-signup').className = m==='signup'?'active':'';
     }
 
     function toggleMenu() {
         document.getElementById('sidebar').classList.toggle('open');
         const ov = document.getElementById('overlay');
-        ov.style.display = (ov.style.display === 'block') ? 'none' : 'block';
+        ov.style.display = ov.style.display==='block'?'none':'block';
     }
 
     function goPage(id, title) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         document.getElementById('page-title').innerText = title;
-        if(id === 'commu') loadPosts();
+        if(id==='commu') loadPosts();
         if(document.getElementById('sidebar').classList.contains('open')) toggleMenu();
     }
 
-    // XỬ LÝ ĐĂNG NHẬP & ĐĂNG KÝ
     async function runAuth(type) {
         const msg = document.getElementById('auth-status');
-        let email, pass, name = "";
-
-        if(type === 'login') {
-            email = document.getElementById('li-email').value.trim();
-            pass = document.getElementById('li-pass').value.trim();
-        } else {
-            name = document.getElementById('su-name').value.trim();
-            email = document.getElementById('su-email').value.trim();
-            pass = document.getElementById('su-pass').value.trim();
-            if(!name) { msg.innerText = "Tên bạn là gì nhỉ?"; return; }
-        }
-
-        if(!email || !pass) { msg.innerText = "Điền đủ thông tin đã nhé!"; return; }
-        msg.style.color = "blue";
+        let e = (type==='login'?document.getElementById('li-email'):document.getElementById('su-email')).value.trim();
+        let p = (type==='login'?document.getElementById('li-pass'):document.getElementById('su-pass')).value.trim();
+        let n = type==='signup'?document.getElementById('su-name').value.trim():'';
+        
         msg.innerText = "Đang xử lý...";
-
         try {
-            const res = await fetch(`${scriptURL}?action=${type}&user=${encodeURIComponent(name)}&email=${email}&pass=${encodeURIComponent(pass)}`);
+            const res = await fetch(`${scriptURL}?action=${type}&user=${encodeURIComponent(n)}&email=${e}&pass=${encodeURIComponent(p)}`);
             const text = await res.text();
-
-            if(text === "SUCCESS" || text.startsWith("AUTH_OK")) {
-                if(type === 'signup') {
-                    alert("Đăng ký thành công! Hãy Đăng nhập nhé.");
-                    toggleAuth('login');
-                } else {
-                    myEmail = email;
-                    const d = text.split('|');
+            if(text.startsWith("AUTH_OK") || text==="SUCCESS") {
+                if(type==='signup') { alert("Xong! Giờ hãy đăng nhập nhé."); toggleAuth('login'); }
+                else {
+                    myEmail = e; let d = text.split('|');
                     document.getElementById('u-name').innerText = d[1];
                     document.getElementById('u-points').innerText = d[2];
                     document.getElementById('auth-screen').style.display = 'none';
                     document.getElementById('main-app').style.display = 'flex';
                 }
-            } else if(text === "GMAIL_EXISTS") {
-                msg.style.color = "red"; msg.innerText = "Gmail này có người dùng rồi!";
-            } else {
-                msg.style.color = "red"; msg.innerText = "Thông tin không chính xác!";
-            }
-        } catch(e) { msg.innerText = "Lỗi kết nối!"; }
+            } else { msg.innerText = "Thông tin không đúng!"; }
+        } catch(err) { msg.innerText = "Lỗi kết nối!"; }
     }
 
-    // CÁC HÀM KHÁC (LOAD POST, SEND POST...) GIỮ NGUYÊN NHƯ BẢN TRƯỚC
     async function loadPosts() {
         const list = document.getElementById('post-list');
         try {
             const res = await fetch(`${scriptURL}?action=get_posts`);
             const posts = await res.json();
-            list.innerHTML = posts.map(p => `
+            list.innerHTML = posts.map((p, i) => `
                 <div class="post-card">
-                    <h4 style="margin:0">${p.title}</h4>
+                    <span class="tag ${p.type==='truyen'?'tag-truyen':'tag-baitap'}">${p.type}</span>
+                    <h4 style="margin:5px 0">${p.title}</h4>
                     <p style="font-size:0.9rem">${p.body}</p>
-                    <small>Bởi: ${p.author.split('@')[0]}</small>
+                    <div class="comment-section">
+                        <div id="cmts-${i}" style="margin-bottom:5px"><i>Chưa có bình luận...</i></div>
+                        <div class="cmt-input-group">
+                            <input type="text" id="in-${i}" placeholder="Bình luận...">
+                            <button onclick="addCmt(${i})">Gửi</button>
+                        </div>
+                    </div>
                 </div>
             `).join('');
-        } catch(e) { list.innerHTML = "Chưa có bài đăng nào."; }
+        } catch(e) { list.innerHTML = "Chưa có bài viết."; }
+    }
+
+    function addCmt(idx) {
+        let v = document.getElementById('in-'+idx).value;
+        if(!v) return;
+        let box = document.getElementById('cmts-'+idx);
+        if(box.innerText.includes("Chưa có")) box.innerHTML = "";
+        box.innerHTML += `<div class="cmt-item"><b>Bạn:</b> ${v}</div>`;
+        document.getElementById('in-'+idx).value = "";
     }
 
     async function sendPost() {
-        const title = document.getElementById('p-title').value;
-        const body = document.getElementById('p-body').value;
-        await fetch(`${scriptURL}?action=post_content&type=truyen&title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}&email=${myEmail}`);
-        alert("Đã đăng!");
-        goPage('commu', 'Cộng đồng');
+        let t = document.getElementById('ptitle').value;
+        let b = document.getElementById('pbody').value;
+        let ty = document.getElementById('ptype').value;
+        await fetch(`${scriptURL}?action=post_content&type=${ty}&title=${encodeURIComponent(t)}&body=${encodeURIComponent(b)}&email=${myEmail}`);
+        alert("Đăng thành công!");
+        goPage('commu', '🌐 Cộng đồng');
+    }
+
+    function searchFriend() {
+        let v = document.getElementById('fs').value;
+        if(v.length < 2) return;
+        document.getElementById('fl').innerHTML = `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee"><span>👤 ${v}</span><button onclick="alert('Đã gửi lời mời!')" class="btn-go" style="width:80px; padding:5px">Kết bạn</button></div>`;
     }
 </script>
 </body>
