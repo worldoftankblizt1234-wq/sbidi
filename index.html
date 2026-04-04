@@ -3,57 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ngày Xanh Vỡ Mộng - Web Truyện & Đổi Điểm</title>
+    <title>Hệ thống Truyện - Ngày Xanh Vỡ Mộng</title>
     <style>
-        :root { --primary: #2c3e50; --accent: #3498db; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .card { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
-        h1 { color: var(--primary); font-size: 1.5rem; margin-bottom: 1rem; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        button:hover { background: #2980b9; }
-        #status { margin-top: 15px; font-size: 0.9rem; color: #27ae60; }
+        :root { --p: #2563eb; --bg: #f8fafc; }
+        body { font-family: sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .box { background: white; padding: 25px; border-radius: 12px; shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        .hidden { display: none; }
+        input, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: var(--p); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .user-info { display: flex; justify-content: space-between; background: #eff6ff; padding: 10px; border-radius: 6px; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h1>Ngày Xanh Vỡ Mộng</h1>
-    <p>Đăng ký để tích điểm đổi Robux</p>
-    
-    <form id="regForm">
-        <input type="text" name="username" placeholder="Tên tài khoản" required>
-        <input type="password" name="password" placeholder="Mật khẩu" required>
-        <button type="submit" id="submitBtn">Tạo tài khoản ngay</button>
-    </form>
-    
-    <div id="status"></div>
-</div>
+    <div id="auth-screen" class="box">
+        <h2>Chào mừng Minh đến với hệ thống</h2>
+        <p>Đăng ký để bắt đầu viết truyện & tích điểm</p>
+        <input type="text" id="user" placeholder="Tên tài khoản">
+        <input type="password" id="pass" placeholder="Mật khẩu">
+        <button onclick="handleAuth()">Vào hệ thống ngay</button>
+        <p id="msg" style="color: red; font-size: 0.8rem;"></p>
+    </div>
+
+    <div id="home-screen" class="box hidden">
+        <div class="user-info">
+            <span id="display-name"><b>User:</b> ...</span>
+            <span><b>Điểm:</b> <span id="points">0</span> ⭐</span>
+        </div>
+        
+        <h3>Đăng chương mới</h3>
+        <input type="text" id="title" placeholder="Tiêu đề chương (Ví dụ: Chương 1)">
+        <textarea id="content" rows="5" placeholder="Nội dung câu chuyện..."></textarea>
+        <button onclick="postStory()" id="postBtn" style="background: #059669;">Đăng bài & Nhận 10 điểm</button>
+        
+        <hr>
+        <h3>Truyện đã đăng</h3>
+        <div id="story-list" style="font-size: 0.9rem; color: #444;">
+            Chưa có bài đăng nào.
+        </div>
+    </div>
 
 <script>
-    // QUAN TRỌNG: Thay link Web App Google của bạn vào đây
-    const scriptURL = 'LINK_GOOGLE_APPS_SCRIPT_CỦA_BẠN'; 
-    const form = document.getElementById('regForm');
-    const status = document.getElementById('status');
-    const btn = document.getElementById('submitBtn');
+    // 1. KẾT NỐI: Dán link Google Apps Script của bạn vào đây
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxlVrHMz_9yMbfhk0yiqallOnBafc4TKHpiU9vvHL5j-43RMomAoZ6jLQQMHieRwjfR/exec';
+    let currentUser = "";
 
-    form.addEventListener('submit', e => {
-        e.preventDefault();
-        btn.disabled = true;
-        status.innerText = "Đang xử lý dữ liệu an toàn...";
+    // Hàm xử lý Đăng nhập/Đăng ký
+    function handleAuth() {
+        const user = document.getElementById('user').value;
+        const pass = document.getElementById('pass').value;
+        if(!user || !pass) return alert("Nhập đủ tên và mật khẩu nhé!");
 
-        fetch(scriptURL, { method: 'POST', body: new FormData(form)})
-            .then(response => {
-                status.innerText = "Đăng ký thành công! Chào mừng bạn đến với thế giới truyện.";
-                form.reset();
-                btn.disabled = false;
-            })
-            .catch(error => {
-                status.innerText = "Lỗi kết nối! Bạn kiểm tra lại link Google Script nhé.";
-                btn.disabled = false;
-            });
-    });
+        document.getElementById('msg').innerText = "Đang xác thực...";
+        
+        // Gửi dữ liệu qua Google Sheets
+        fetch(scriptURL, {
+            method: 'POST',
+            body: new URLSearchParams({'action': 'auth', 'user': user, 'pass': pass})
+        })
+        .then(() => {
+            // Giả lập đăng nhập thành công để vào Home ngay
+            currentUser = user;
+            document.getElementById('display-name').innerText = "Chào, " + user;
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('home-screen').classList.remove('hidden');
+        });
+    }
+
+    // Hàm đăng bài và cộng điểm
+    function postStory() {
+        const title = document.getElementById('title').value;
+        const content = document.getElementById('content').value;
+        if(!title || !content) return alert("Nhập nội dung truyện đã!");
+
+        document.getElementById('postBtn').innerText = "Đang lưu...";
+
+        fetch(scriptURL, {
+            method: 'POST',
+            body: new URLSearchParams({'action': 'post', 'user': currentUser, 'title': title, 'content': content})
+        })
+        .then(() => {
+            // Cập nhật giao diện khi đăng xong
+            let p = parseInt(document.getElementById('points').innerText);
+            document.getElementById('points').innerText = p + 10;
+            
+            const list = document.getElementById('story-list');
+            list.innerHTML = `<div><b>${title}:</b> ${content.substring(0, 30)}...</div>` + list.innerHTML;
+            
+            document.getElementById('title').value = "";
+            document.getElementById('content').value = "";
+            document.getElementById('postBtn').innerText = "Đăng bài & Nhận 10 điểm";
+            alert("Đã đăng truyện và cộng 10 điểm vào Sheets!");
+        });
+    }
 </script>
-
 </body>
 </html>
