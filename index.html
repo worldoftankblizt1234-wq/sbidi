@@ -3,147 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S-Bidi Community</title>
+    <title>S-Bidi: Cộng Đồng Lý Tự Trọng</title>
     <style>
-        :root { --p: #2563eb; --bg: #f1f5f9; --s: #1e293b; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding-bottom: 70px; }
-        #auth-screen { display: flex; align-items: center; justify-content: center; height: 100vh; background: var(--p); }
-        .auth-box { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 350px; text-align: center; }
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
-        .btn { width: 100%; padding: 12px; border-radius: 8px; border: none; background: var(--p); color: white; font-weight: bold; cursor: pointer; }
+        :root { --p: #2563eb; --bg: #f8fafc; --s: #1e293b; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding-bottom: 80px; }
         
-        /* App Layout */
+        /* Màn hình Auth */
+        #auth-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--p); }
+        .auth-box { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 380px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #eee; }
+        .tabs button { flex: 1; padding: 10px; border: none; background: none; font-weight: bold; color: #64748b; cursor: pointer; }
+        .tabs button.active { color: var(--p); border-bottom: 3px solid var(--p); }
+        
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; border-radius: 10px; border: none; background: var(--p); color: white; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn:active { transform: scale(0.98); }
+
+        /* Giao diện chính */
         #main-app { display: none; }
-        .header { background: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .page { display: none; padding: 15px; }
+        .header { background: white; padding: 15px; position: sticky; top: 0; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 10; }
+        .page { display: none; padding: 15px; animation: fadeIn 0.3s; }
         .page.active { display: block; }
-        
-        /* Post Card */
-        .card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .cmt-item { font-size: 0.85rem; padding: 5px; border-bottom: 1px solid #eee; }
-        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .card { background: white; padding: 15px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 5px solid var(--p); }
+        .cmt-box { background: #f1f5f9; padding: 10px; border-radius: 10px; margin-top: 10px; font-size: 0.85rem; }
+        .cmt-item { border-bottom: 1px solid #e2e8f0; padding: 5px 0; }
+
         /* Bottom Menu */
-        .menu { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #ddd; }
-        .menu-item { flex: 1; padding: 15px; text-align: center; font-size: 0.8rem; cursor: pointer; color: #64748b; }
-        .menu-item.active { color: var(--p); font-weight: bold; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #eee; z-index: 100; }
+        .nav-item { flex: 1; padding: 15px; text-align: center; font-size: 0.75rem; color: #64748b; cursor: pointer; }
+        .nav-item.active { color: var(--p); font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="auth-screen">
     <div class="auth-box">
-        <h2 style="color:var(--p)">S-BIDI LOGIN</h2>
-        <div id="auth-fields">
-            <input type="text" id="u-name-input" placeholder="Tên hiển thị (chỉ dùng khi đăng ký)">
-            <input type="email" id="u-email" placeholder="Gmail">
-            <input type="password" id="u-pass" placeholder="Mật khẩu">
-            <button class="btn" onclick="handleAuth('login')">Đăng Nhập</button>
-            <p onclick="handleAuth('signup')" style="margin-top:15px; font-size:0.8rem; color:var(--p); cursor:pointer">Chưa có nick? Đăng ký vào luôn</p>
+        <h2 style="color:var(--p); text-align:center">S-BIDI</h2>
+        <div class="tabs">
+            <button id="btn-login-tab" class="active" onclick="switchTab('login')">ĐĂNG NHẬP</button>
+            <button id="btn-signup-tab" onclick="switchTab('signup')">ĐĂNG KÝ</button>
         </div>
-        <p id="status" style="color:red"></p>
+
+        <div id="view-login">
+            <input type="email" id="l-email" placeholder="Gmail">
+            <input type="password" id="l-pass" placeholder="Mật khẩu">
+            <button class="btn" onclick="auth('login')">Vào Hệ Thống</button>
+        </div>
+
+        <div id="view-signup" style="display:none">
+            <input type="text" id="s-name" placeholder="Tên hiển thị của bạn">
+            <input type="email" id="s-email" placeholder="Gmail">
+            <input type="password" id="s-pass" placeholder="Mật khẩu bí mật">
+            <button class="btn" style="background:#8b5cf6" onclick="auth('signup')">Tạo Nick & Vào Luôn</button>
+        </div>
+        <p id="auth-msg" style="color:red; text-align:center; font-size:0.8rem; margin-top:10px"></p>
     </div>
 </div>
 
 <div id="main-app">
     <div class="header">
-        <b>S-Bidi Community</b>
-        <span id="display-info" style="font-size:0.8rem">... | 0⭐</span>
+        <b>🌐 S-BIDI</b>
+        <span id="u-stat" style="font-size:0.8rem; color:var(--p)">... | 0⭐</span>
     </div>
 
-    <div id="pg-news" class="page active">
-        <h3>🌐 Bảng tin cộng đồng</h3>
-        <div id="list-posts">Đang tải...</div>
+    <div id="pg-home" class="page active">
+        <div id="post-container">Đang tải bảng tin...</div>
     </div>
 
-    <div id="pg-post" class="page">
-        <h3>✍️ Đăng truyện / Thông báo</h3>
-        <input id="p-title" placeholder="Tiêu đề bài viết">
-        <textarea id="p-body" rows="5" placeholder="Nội dung bạn muốn chia sẻ..."></textarea>
-        <button class="btn" onclick="submitPost()">Đăng (Nhận 10⭐)</button>
+    <div id="pg-write" class="page">
+        <div class="card">
+            <h3>✍️ Đăng truyện / Thông báo</h3>
+            <input id="pt" placeholder="Tiêu đề bài viết">
+            <textarea id="pb" rows="6" placeholder="Nội dung muốn chia sẻ..."></textarea>
+            <button class="btn" onclick="doPost()">Đăng Bài (Nhận 10⭐)</button>
+        </div>
     </div>
 
     <div id="pg-shop" class="page">
-        <h3>🎁 Cửa hàng điểm thưởng</h3>
-        <div class="card"><b>Thẻ giảm giá 10k</b> - Giá: 500⭐ <button disabled>Chưa đủ</button></div>
-        <div class="card"><b>Danh hiệu "Đại gia"</b> - Giá: 1000⭐ <button disabled>Chưa đủ</button></div>
+        <h3>🎁 Đổi quà Lý Tự Trọng</h3>
+        <div class="card">Thẻ giảm giá 20k tại Canteen <button disabled>500⭐</button></div>
+        <div class="card">Huy hiệu "Học sinh ưu tú" <button disabled>1000⭐</button></div>
     </div>
 
-    <div class="menu">
-        <div class="menu-item active" onclick="go('pg-news', this)">Cộng đồng</div>
-        <div class="menu-item" onclick="go('pg-post', this)">Đăng bài</div>
-        <div class="menu-item" onclick="go('pg-shop', this)">Đổi quà</div>
-        <div class="menu-item" onclick="location.reload()">Thoát</div>
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="go('pg-home', this)">Bảng tin</div>
+        <div class="nav-item" onclick="go('pg-write', this)">Đăng bài</div>
+        <div class="nav-item" onclick="go('pg-shop', this)">Đổi quà</div>
+        <div class="nav-item" onclick="location.reload()" style="color:red">Thoát</div>
     </div>
 </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbwy-T0kV-90kONLMkiYvlTqB50PxSDfNjGfMobul6LcsOQAV8fAjKcjTj6cQ2yHN-wq/exec';
-    let user = { name: "", email: "", points: 0 };
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbw0rD6lRQS_2Y4tfXmTK3mkYc-3aTwZJ0C6Pr_Lbyyaov0mfPJeZFqw9R_Pc2Xn-4bX/exec';
+    let me = { name: "", email: "", points: 0 };
 
-    async function handleAuth(type) {
-        const n = document.getElementById('u-name-input').value;
-        const e = document.getElementById('u-email').value;
-        const p = document.getElementById('u-pass').value;
-        document.getElementById('status').innerText = "Đang xử lý...";
+    function switchTab(t) {
+        document.getElementById('view-login').style.display = t==='login'?'block':'none';
+        document.getElementById('view-signup').style.display = t==='signup'?'block':'none';
+        document.getElementById('btn-login-tab').className = t==='login'?'active':'';
+        document.getElementById('btn-signup-tab').className = t==='signup'?'active':'';
+    }
 
+    async function auth(type) {
+        const msg = document.getElementById('auth-msg');
+        const n = document.getElementById('s-name').value;
+        const e = (type==='login'?document.getElementById('l-email'):document.getElementById('s-email')).value;
+        const p = (type==='login'?document.getElementById('l-pass'):document.getElementById('s-pass')).value;
+
+        msg.innerText = "Chờ xíu nhé...";
         const res = await fetch(`${scriptURL}?action=${type}&user=${encodeURIComponent(n)}&email=${e}&pass=${p}`);
         const text = await res.text();
 
         if(text.startsWith("AUTH_OK")) {
             const d = text.split('|');
-            user.name = d[1]; user.points = d[2];
-            document.getElementById('display-info').innerText = `${user.name} | ${user.points}⭐`;
+            me.name = d[1]; me.points = d[2];
+            document.getElementById('u-stat').innerText = `${me.name} | ${me.points}⭐`;
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
             loadPosts();
-        } else { document.getElementById('status').innerText = "Lỗi: " + text; }
+        } else { msg.innerText = "Lỗi: " + text; }
     }
 
     function go(id, el) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(m => m.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         el.classList.add('active');
-        if(id === 'pg-news') loadPosts();
+        if(id === 'pg-home') loadPosts();
     }
 
     async function loadPosts() {
         const res = await fetch(`${scriptURL}?action=get_posts`);
-        const posts = await res.json();
-        document.getElementById('list-posts').innerHTML = posts.map(p => `
+        const data = await res.json();
+        document.getElementById('post-container').innerHTML = data.map(p => `
             <div class="card">
                 <b style="color:var(--p)">@${p.user}</b>
                 <h4>${p.title}</h4>
                 <p>${p.body}</p>
-                <div style="background:#f8fafc; padding:10px; border-radius:8px">
-                    <div id="cmts-${p.id}">${p.comments.map(c => `<div class="cmt-item"><b>${c.user}:</b> ${c.text}</div>`).join('')}</div>
-                    <div style="display:flex; margin-top:10px">
-                        <input id="in-${p.id}" style="margin:0; padding:5px" placeholder="Bình luận...">
-                        <button onclick="sendC('${p.id}')" style="background:var(--s); color:white; border:none; padding:5px 10px; border-radius:5px; margin-left:5px">Gửi</button>
+                <div class="cmt-box">
+                    <div id="c-${p.id}">${p.comments.map(c => `<div class="cmt-item"><b>${c.user}:</b> ${c.text}</div>`).join('')}</div>
+                    <div style="display:flex; margin-top:8px">
+                        <input id="in-${p.id}" style="margin:0; padding:8px" placeholder="Bình luận...">
+                        <button onclick="sendC('${p.id}')" style="background:var(--s); color:white; border:none; padding:5px 10px; border-radius:8px; margin-left:5px">Gửi</button>
                     </div>
                 </div>
-                <button onclick="addFriend('${p.user}')" style="margin-top:10px; border:none; font-size:0.7rem; color:var(--p); background:none; cursor:pointer">➕ Kết bạn</button>
             </div>
         `).join('');
     }
 
-    async function submitPost() {
-        const t = document.getElementById('p-title').value;
-        const b = document.getElementById('p-body').value;
-        await fetch(`${scriptURL}?action=post_content&title=${encodeURIComponent(t)}&body=${encodeURIComponent(b)}&user=${encodeURIComponent(user.name)}`);
-        alert("Đăng bài thành công! +10⭐");
-        go('pg-news', document.querySelectorAll('.menu-item')[0]);
+    async function doPost() {
+        const t = document.getElementById('pt').value;
+        const b = document.getElementById('pb').value;
+        const res = await fetch(`${scriptURL}?action=post_content&title=${encodeURIComponent(t)}&body=${encodeURIComponent(b)}&user=${encodeURIComponent(me.name)}`);
+        const result = await res.text();
+        alert(result === "SUCCESS_PLUS_10" ? "Đăng bài thành công! +10⭐" : "Đã đăng bài! (Hôm nay bạn nhận ⭐ rồi)");
+        go('pg-home', document.querySelectorAll('.nav-item')[0]);
     }
 
     async function sendC(pid) {
         const txt = document.getElementById('in-'+pid).value;
-        await fetch(`${scriptURL}?action=add_comment&post_id=${pid}&user=${encodeURIComponent(user.name)}&text=${encodeURIComponent(txt)}`);
+        await fetch(`${scriptURL}?action=add_comment&post_id=${pid}&user=${encodeURIComponent(me.name)}&text=${encodeURIComponent(txt)}`);
         loadPosts();
-    }
-
-    async function addFriend(target) {
-        await fetch(`${scriptURL}?action=add_friend&user=${encodeURIComponent(user.name)}&target=${encodeURIComponent(target)}`);
-        alert("Đã gửi yêu cầu kết bạn cho " + target);
     }
 </script>
 </body>
