@@ -1,132 +1,97 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S-Bidi Community</title>
+    <base target="_top">
     <style>
-        :root { --p: #2563eb; --bg: #f8fafc; }
-        body { font-family: sans-serif; background: var(--bg); margin: 0; }
-        #auth-page { display: flex; justify-content: center; align-items: center; height: 100vh; background: var(--p); }
-        .auth-box { background: white; padding: 25px; border-radius: 15px; width: 320px; text-align: center; }
-        .tabs { display: flex; margin-bottom: 15px; border-bottom: 1px solid #eee; }
-        .tabs button { flex: 1; padding: 10px; border: none; background: none; cursor: pointer; font-weight: bold; color: #666; }
-        .tabs button.active { color: var(--p); border-bottom: 2px solid var(--p); }
-        input, textarea { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
-        .btn { background: var(--p); color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        /* CSS tối giản, hiện đại */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: #f4f4f9; }
+        .hidden { display: none !important; }
         
-        #main-app { display: none; }
-        .nav { background: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
-        .container { max-width: 600px; margin: 0 auto; padding: 15px; }
-        .card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .cmt-item { font-size: 0.85rem; padding: 5px 0; border-bottom: 1px solid #f1f1f1; }
+        /* Auth */
+        .auth-screen { display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .card { background: white; padding: 2rem; border-radius: 10px; shadow: 0 4px 6px rgba(0,0,0,0.1); width: 320px; text-align: center; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
+        button { width: 100%; padding: 10px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; }
+
+        /* Navbar */
+        .navbar { background: #2c3e50; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .points { background: #f1c40f; color: #333; padding: 4px 12px; border-radius: 15px; font-weight: bold; }
+        .hamburger { cursor: pointer; font-size: 24px; user-select: none; }
+
+        /* Side Menu */
+        .menu { position: fixed; right: 0; top: 60px; background: white; width: 200px; box-shadow: -2px 0 5px rgba(0,0,0,0.1); display: none; }
+        .menu.active { display: block; }
+        .menu-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; color: #333; }
+        .menu-item:hover { background: #f0f0f0; }
     </style>
 </head>
 <body>
 
-<div id="auth-page">
-    <div class="auth-box">
-        <h2 style="color:var(--p)">S-BIDI</h2>
-        <div class="tabs">
-            <button id="t-login" class="active" onclick="showAuth('login')">Đăng nhập</button>
-            <button id="t-signup" onclick="showAuth('signup')">Đăng ký</button>
-        </div>
-        <div id="f-login">
-            <input type="email" id="l-email" placeholder="Gmail">
-            <input type="password" id="l-pass" placeholder="Mật khẩu">
-            <button class="btn" onclick="runAuth('login')">Vào Community</button>
-        </div>
-        <div id="f-signup" style="display:none">
-            <input type="text" id="s-name" placeholder="Tên hiển thị">
-            <input type="email" id="s-email" placeholder="Gmail">
-            <input type="password" id="s-pass" placeholder="Mật khẩu">
-            <button class="btn" onclick="runAuth('signup')" style="background:#8b5cf6">Đăng ký & Vào luôn</button>
-        </div>
-        <p id="msg" style="color:red; font-size:0.8rem; margin-top:10px"></p>
-    </div>
-</div>
-
-<div id="main-app">
-    <div class="nav">
-        <b>🌐 S-BIDI</b>
-        <span id="u-info" style="font-size:0.8rem; color:var(--p)">...</span>
-    </div>
-    <div class="container">
+    <div id="auth-box" class="auth-screen">
         <div class="card">
-            <h3>✍️ Đăng bài mới</h3>
-            <input id="pt" placeholder="Tiêu đề">
-            <textarea id="pb" rows="3" placeholder="Nội dung..."></textarea>
-            <button class="btn" onclick="sendPost()">Đăng ngay (+10⭐)</button>
+            <h2 id="title">Đăng Nhập</h2>
+            <input type="text" id="user" placeholder="Email">
+            <input type="password" id="pass" placeholder="Mật khẩu">
+            <button onclick="doAuth()" id="btn">Xác nhận</button>
+            <p style="font-size:12px; margin-top:10px; color:blue; cursor:pointer" onclick="swap()">Chưa có nick? Đăng ký</p>
         </div>
-        <div id="feed">Đang tải bảng tin...</div>
     </div>
-</div>
 
-<script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbwKKx7s0BGWdZS5jkig74EFL4Xcu2Tk8KCs_bk5D5jmgk4HgjGGEccDxYzgAhtST3pL/exec';
-    let me = { name: "", points: 0 };
-
-    function showAuth(type) {
-        document.getElementById('f-login').style.display = type==='login'?'block':'none';
-        document.getElementById('f-signup').style.display = type==='signup'?'block':'none';
-        document.getElementById('t-login').className = type==='login'?'active':'';
-        document.getElementById('t-signup').className = type==='signup'?'active':'';
-    }
-
-    async function runAuth(type) {
-        const n = document.getElementById('s-name').value;
-        const e = (type==='login'?document.getElementById('l-email'):document.getElementById('s-email')).value;
-        const p = (type==='login'?document.getElementById('l-pass'):document.getElementById('s-pass')).value;
-        document.getElementById('msg').innerText = "Đang kiểm tra...";
-
-        const res = await fetch(`${scriptURL}?action=${type}&user=${encodeURIComponent(n)}&email=${e}&pass=${p}`);
-        const text = await res.text();
-
-        if(text.startsWith("AUTH_OK")) {
-            const d = text.split('|');
-            me.name = d[1]; me.points = d[2];
-            document.getElementById('u-info').innerText = `${me.name} | ${me.points}⭐`;
-            document.getElementById('auth-page').style.display = 'none';
-            document.getElementById('main-app').style.display = 'block';
-            load();
-        } else { document.getElementById('msg').innerText = "Lỗi: " + text; }
-    }
-
-    async function load() {
-        const res = await fetch(`${scriptURL}?action=get_posts`);
-        const data = await res.json();
-        document.getElementById('feed').innerHTML = data.map(p => `
-            <div class="card">
-                <b style="color:var(--p)">@${p.user}</b>
-                <h4>${p.title}</h4>
-                <p>${p.body}</p>
-                <div style="background:#f8fafc; padding:10px; border-radius:8px">
-                    <div id="list-${p.id}">${p.comments.map(c => `<div class="cmt-item"><b>${c.user}:</b> ${c.text}</div>`).join('')}</div>
-                    <div style="display:flex; margin-top:10px">
-                        <input id="in-${p.id}" style="margin:0" placeholder="Bình luận...">
-                        <button onclick="sendC('${p.id}')" style="background:var(--p); color:white; border:none; padding:5px 10px; border-radius:5px; margin-left:5px">Gửi</button>
-                    </div>
-                </div>
+    <div id="home-box" class="hidden">
+        <nav class="navbar">
+            <div>S-BIDI</div>
+            <div style="display:flex; align-items:center; gap:15px">
+                <div class="points"><span id="u-points">0</span> xu</div>
+                <div class="hamburger" onclick="toggleM()">☰</div>
             </div>
-        `).join('');
-    }
+        </nav>
 
-    async function sendPost() {
-        const t = document.getElementById('pt').value;
-        const b = document.getElementById('pb').value;
-        const res = await fetch(`${scriptURL}?action=post_content&user=${encodeURIComponent(me.name)}&title=${encodeURIComponent(t)}&body=${encodeURIComponent(b)}`);
-        const result = await res.text();
-        alert(result === "PLUS_10" ? "Thành công! +10⭐" : "Đã đăng bài!");
-        document.getElementById('pt').value = ""; document.getElementById('pb').value = "";
-        load();
-    }
+        <div id="side-menu" class="menu">
+            <div class="menu-item" onclick="msg('Trang chủ')">Home</div>
+            <div class="menu-item" onclick="msg('Đổi điểm')">Đổi điểm</div>
+            <div class="menu-item" onclick="msg('Kết bạn')">Kết bạn</div>
+            <div class="menu-item" onclick="msg('Thông báo')">Thông báo</div>
+            <div class="menu-item" onclick="msg('Cộng đồng')">Cộng đồng</div>
+            <div class="menu-item" style="color:red" onclick="location.reload()">Thoát</div>
+        </div>
 
-    async function sendC(pid) {
-        const txt = document.getElementById('in-'+pid).value;
-        await fetch(`${scriptURL}?action=add_comment&post_id=${pid}&user=${encodeURIComponent(me.name)}&text=${encodeURIComponent(txt)}`);
-        document.getElementById('in-'+pid).value = "";
-        load();
-    }
-</script>
+        <div style="padding:20px; text-align:center">
+            <h3>Chào mừng bạn đã vào hệ thống!</h3>
+        </div>
+    </div>
+
+    <script>
+        let isLogin = true;
+        function swap() {
+            isLogin = !isLogin;
+            document.getElementById('title').innerText = isLogin ? "Đăng Nhập" : "Đăng Ký";
+        }
+
+        function toggleM() {
+            document.getElementById('side-menu').classList.toggle('active');
+        }
+
+        function doAuth() {
+            const u = document.getElementById('user').value;
+            const p = document.getElementById('pass').value;
+            if(!u || !p) return alert("Nhập đủ đã Minh ơi!");
+
+            document.getElementById('btn').innerText = "Chờ tí...";
+            
+            google.script.run.withSuccessHandler(res => {
+                if(res.success) {
+                    document.getElementById('u-points').innerText = res.points;
+                    document.getElementById('auth-box').classList.add('hidden');
+                    document.getElementById('home-box').classList.remove('hidden');
+                } else {
+                    alert(res.msg);
+                    document.getElementById('btn').innerText = "Xác nhận";
+                }
+            }).processAuth(u, p, isLogin ? "signin" : "signup");
+        }
+
+        function msg(t) { alert("Tính năng " + t + " đang phát triển!"); toggleM(); }
+    </script>
 </body>
 </html>
