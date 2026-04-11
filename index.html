@@ -3,59 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S-BIDI - Diệt Bọ 100%</title>
+    <title>S-BIDI - Fixed 100%</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f0f2f5; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; }
         .hidden { display: none !important; }
         .auth-container { display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .auth-box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 320px; text-align: center; }
+        .auth-box { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 320px; text-align: center; }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        #msg { margin: 10px 0; padding: 10px; border-radius: 6px; font-size: 0.85rem; min-height: 18px; }
-        .msg-error { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
-        .msg-success { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
-        .navbar { background: #007bff; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
-        .card { background: white; padding: 20px; border-radius: 10px; margin: 20px auto; max-width: 500px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        button { background: #007bff; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; }
-        button:disabled { background: #ccc; }
-        #toggle-text { color: #007bff; cursor: pointer; margin-top: 15px; font-size: 0.85rem; }
+        #msg { margin: 10px 0; padding: 10px; border-radius: 8px; font-size: 0.85rem; }
+        .msg-error { background: #fee; color: #c33; border: 1px solid #fcc; }
+        .msg-success { background: #efe; color: #282; border: 1px solid #cfc; }
+        button { background: #007bff; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #0056b3; }
+        .navbar { background: #007bff; color: white; padding: 15px 25px; display: flex; justify-content: space-between; }
+        .card { background: white; padding: 25px; border-radius: 15px; margin: 20px auto; max-width: 500px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
 
     <div id="auth-screen" class="auth-container">
         <div class="auth-box">
-            <h2 id="form-title">Đăng Nhập</h2>
+            <h2 id="form-title">S-BIDI</h2>
             <input type="text" id="username" class="hidden" placeholder="Tên hiển thị">
-            <input type="email" id="gmail" placeholder="Địa chỉ gmail">
+            <input type="email" id="gmail" placeholder="Gmail (ví dụ sbidi@gmail.com)">
             <input type="password" id="password" placeholder="Mật khẩu">
             <div id="msg" class="hidden"></div>
             <button onclick="handleAuth()" id="main-btn">Xác nhận</button>
-            <p id="toggle-text" onclick="toggleForm()">Chưa có tài khoản? Đăng ký ngay</p>
+            <p id="toggle-text" onclick="toggleForm()" style="color:#007bff; cursor:pointer; font-size:0.8rem; margin-top:15px;">Chưa có tài khoản? Đăng ký</p>
         </div>
     </div>
 
     <div id="home-screen" class="hidden">
-        <header class="navbar">
-            <span>S-BIDI</span>
-            <button onclick="logout()" style="width: auto; background: #dc3545; padding: 5px 12px;">Thoát</button>
-        </header>
+        <nav class="navbar"><b>S-BIDI</b> <span onclick="logout()" style="cursor:pointer">Thoát</span></nav>
         <div class="card">
-            <h3>Chào mừng ông: <span id="display-name" style="color:#007bff;"></span></h3>
-            <p>Điểm của ông: <b id="user-points" style="font-size: 2rem; color: #28a745;">0</b></p>
-            <textarea id="post-content" placeholder="Viết bài mới nhận điểm..." style="width:100%; height:80px; margin-top:10px; padding:10px;"></textarea>
-            <button onclick="addPost()" id="post-btn" style="margin-top:10px;">Đăng bài (+10 điểm)</button>
+            <h3>Chào, <span id="display-name"></span></h3>
+            <p>Điểm: <b id="user-points" style="font-size: 2.5rem; color: #28a745;">0</b></p>
+            <textarea id="post-content" placeholder="Viết gì đó..." style="width:100%; height:80px; margin: 10px 0; border-radius:8px; border:1px solid #ddd; padding:10px;"></textarea>
+            <button onclick="addPost()" id="post-btn">Đăng bài (+10đ)</button>
         </div>
     </div>
 
     <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbwCuUH0YxQWNIMaJMGfq3PceSBEMW1TqgfdgoVR6OLsXOWKztnv4jUpkJ30jCpCMZHc/exec";
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbw_-cKGaO4yZV-vrZfzOeTtuTM1MPQ82vktdEuKZ3eVKZaIAgy7MmgrSuBP1OfifjfK/exec";
         let isLogin = true;
 
-        function showMsg(text, type) {
-            const msgBox = document.getElementById('msg');
-            msgBox.innerText = text;
-            msgBox.className = (type === 'error') ? 'msg-error' : 'msg-success';
-            msgBox.classList.remove('hidden');
+        function showMsg(t, type) {
+            const m = document.getElementById('msg');
+            m.innerText = t; m.className = type === 'error' ? 'msg-error' : 'msg-success';
+            m.classList.remove('hidden');
         }
 
         function toggleForm() {
@@ -72,51 +67,39 @@
             const btn = document.getElementById('main-btn');
 
             if (!mail || !pass) return showMsg("Thiếu thông tin!", "error");
-            if (!mail.endsWith("@gmail.com")) return showMsg("Phải có đuôi @gmail.com!", "error");
-
-            btn.innerText = "Đang kiểm tra..."; btn.disabled = true;
+            btn.innerText = "Đang xử lý..."; btn.disabled = true;
 
             if (isLogin) {
-                // DIỆT BỌ TẠI ĐÂY: Dùng fetch (mặc định là GET) để check tài khoản
                 try {
-                    const checkUrl = `${GAS_URL}?action=login&mail=${encodeURIComponent(mail)}&pass=${encodeURIComponent(pass)}`;
-                    const response = await fetch(checkUrl);
-                    const result = await response.text();
-
-                    if (result === "FOUND") {
-                        showMsg("Đang vào...", "success");
+                    // DIỆT BỌ: Dùng GET để check tài khoản thực tế
+                    const res = await fetch(`${GAS_URL}?action=login&mail=${mail}&pass=${pass}`);
+                    const txt = await res.text();
+                    if (txt === "FOUND") {
                         localStorage.setItem("s_bidi_mail", mail);
                         localStorage.setItem("s_bidi_name", mail.split('@')[0]);
-                        setTimeout(() => location.reload(), 1000);
+                        location.reload();
                     } else {
-                        showMsg("Tài khoản hoặc mật khẩu sai bét!", "error");
+                        showMsg("Sai tài khoản hoặc mật khẩu!", "error");
                         btn.innerText = "Xác nhận"; btn.disabled = false;
                     }
                 } catch (e) {
-                    showMsg("Lỗi xác thực rồi!", "error");
-                    btn.innerText = "Xác nhận"; btn.disabled = false;
+                    showMsg("Lỗi xác thực!", "error");
+                    btn.disabled = false;
                 }
             } else {
-                // ĐĂNG KÝ
-                if(!user) return showMsg("Thiếu tên hiển thị!", "error");
-                await fetch(GAS_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    body: JSON.stringify({ action: "signup", user, pass, mail })
-                });
-                showMsg("Đăng ký thành công! Hãy Đăng nhập nhé.", "success");
-                setTimeout(() => toggleForm(), 1500);
+                await fetch(GAS_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "signup", user, pass, mail }) });
+                showMsg("Đăng ký xong! Hãy đăng nhập.", "success");
+                setTimeout(toggleForm, 1500);
                 btn.innerText = "Xác nhận"; btn.disabled = false;
             }
         }
 
         window.onload = () => {
-            const savedMail = localStorage.getItem("s_bidi_mail");
-            const savedName = localStorage.getItem("s_bidi_name");
-            if (savedMail) {
+            const m = localStorage.getItem("s_bidi_mail");
+            if (m) {
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('home-screen').classList.remove('hidden');
-                document.getElementById('display-name').innerText = savedName;
+                document.getElementById('display-name').innerText = localStorage.getItem("s_bidi_name");
             }
         };
 
@@ -125,18 +108,12 @@
             const content = document.getElementById('post-content').value;
             if(!content) return;
             const btn = document.getElementById('post-btn');
-            btn.innerText = "Đang lưu..."; btn.disabled = true;
-
-            await fetch(GAS_URL, {
-                method: "POST",
-                mode: "no-cors",
-                body: JSON.stringify({ action: "addPoint", mail: mail, points: 10 })
-            });
-            
+            btn.disabled = true;
+            await fetch(GAS_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "addPoint", mail, points: 10 }) });
             document.getElementById('post-content').value = "";
             let p = document.getElementById('user-points');
             p.innerText = parseInt(p.innerText) + 10;
-            btn.innerText = "Đăng bài (+10 điểm)"; btn.disabled = false;
+            btn.disabled = false;
         }
 
         function logout() { localStorage.clear(); location.reload(); }
