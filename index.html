@@ -55,13 +55,13 @@
     <div id="auth-screen" class="auth-container">
         <div class="auth-box">
             <h2 id="form-title">S-BIDI</h2>
-            <p style="font-size: 0.8rem; color: #aaa; margin-bottom: 20px;">Khế ước ma giới đang đợi ông!</p>
+            <p style="font-size: 0.8rem; color: #aaa; margin-bottom: 20px;">vô để tận hưởng tiện ích</p>
             <input type="text" id="username" class="hidden" placeholder="Tên hiển thị">
             <input type="email" id="gmail" placeholder="Địa chỉ @gmail.com">
             <input type="password" id="password" placeholder="Mật khẩu bí mật">
             <div id="msg" class="hidden"></div>
             <button onclick="handleAuth()" id="main-btn">Xác nhận</button>
-            <p id="toggle-text" onclick="toggleForm()">Chưa có khế ước? Đăng ký</p>
+            <p id="toggle-text" onclick="toggleForm()">Chưa có tài khoản? Đăng ký</p>
         </div>
     </div>
 
@@ -69,7 +69,7 @@
         <nav class="navbar"><b>S-BIDI</b> <span onclick="logout()" style="cursor:pointer; color:#ff4d4d">Thoát</span></nav>
         <div class="card">
             <h3>Chào mừng ông: <span id="display-name" style="color:#d175ff"></span></h3>
-            <p>Năng lượng ma giới: <b id="user-points" style="font-size:2.5rem; color:green">0</b></p>
+            <p>Năng lượng: <b id="user-points" style="font-size:2.5rem; color:green">0</b></p>
             <textarea id="post-content" placeholder="Viết câu chuyện của ông..." style="width:100%; height:80px; background:#120e18; color:white; border:1px solid #6f2ca3; padding:10px; border-radius:10px;"></textarea>
             <button onclick="addPost()" id="post-btn">Đăng truyện (+10đ)</button>
         </div>
