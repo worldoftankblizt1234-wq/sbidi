@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S-BIDI - Hanako System</title>
+    <title>S-BIDI - Hanako Library</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         :root { --p-color: #d175ff; --bg: #120e18; --sidebar: rgba(25, 15, 35, 0.98); }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; color: white; overflow: hidden; }
         .hidden { display: none !important; }
 
+        /* AUTH SCREEN */
         .auth-container { 
             display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh;
             background: linear-gradient(rgba(18, 14, 24, 0.75), rgba(43, 27, 65, 0.85)), 
@@ -19,6 +20,7 @@
         #auth-avt { width: 130px; height: 130px; border-radius: 50%; border: 4px solid var(--p-color); margin-bottom: -65px; z-index: 10; object-fit: cover; box-shadow: 0 0 20px var(--p-color); }
         .auth-box { background: var(--sidebar); padding: 80px 40px 40px; border-radius: 20px; width: 320px; text-align: center; border: 1px solid var(--p-color); }
 
+        /* MAIN INTERFACE */
         #home-screen { display: grid; grid-template-columns: 260px 1fr; height: 100vh; }
         .sidebar { background: var(--sidebar); border-right: 1px solid #444; padding: 20px; display: flex; flex-direction: column; gap: 5px; }
         .sidebar-avt { width: 75px; height: 75px; border-radius: 50%; border: 2px solid var(--p-color); margin: 0 auto 10px; object-fit: cover; }
@@ -26,7 +28,7 @@
         .menu-item { background: none; border: 1px solid transparent; color: #aaa; padding: 12px; text-align: left; border-radius: 8px; cursor: pointer; transition: 0.2s; }
         .menu-item:hover, .menu-item.active { background: rgba(209, 117, 255, 0.15); color: white; border-color: var(--p-color); }
 
-        .main-content { padding: 40px; overflow-y: auto; background: var(--bg); transition: 0.3s; }
+        .main-content { padding: 40px; overflow-y: auto; background: var(--bg); }
         .card { background: rgba(255, 255, 255, 0.04); padding: 20px; border-radius: 15px; border: 1px solid #333; margin-bottom: 20px; }
         input, textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #1a1520; color: white; box-sizing: border-box; }
         button { background: #6f2ca3; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
@@ -41,7 +43,7 @@
         <div class="auth-box">
             <h2 style="color:var(--p-color); margin-top:0;">S-BIDI</h2>
             <form onsubmit="handleAuth(event)">
-                <input type="text" id="username" class="hidden" placeholder="Tên ma giới">
+                <input type="text" id="username" class="hidden" placeholder="Tên hiển thị">
                 <input type="email" id="gmail" placeholder="Gmail @gmail.com" required>
                 <input type="password" id="password" placeholder="Mật khẩu" required>
                 <button type="submit" id="auth-btn">Ký khế ước</button>
@@ -57,59 +59,49 @@
                 <b id="side-name">Linh hồn</b><br>
                 <small id="side-pts" style="color:var(--p-color)">0đ ma lực</small>
             </div>
-            
             <div class="sidebar-label">Khám phá</div>
             <button class="menu-item active" onclick="tab(event, 'home')">🏠 Trang chủ</button>
             <button class="menu-item" onclick="tab(event, 'comm')">🌍 Cộng đồng</button>
             <button class="menu-item" onclick="tab(event, 'rank')">🏆 Xếp hạng</button>
-
             <div class="sidebar-label">Cá nhân</div>
             <button class="menu-item" onclick="tab(event, 'prof')">👤 Hồ sơ</button>
             <button class="menu-item" onclick="tab(event, 'find')">🤝 Tìm bạn</button>
-            
             <button onclick="logout()" class="menu-item" style="color:#ff4d4d; margin-top:auto;">🚪 Thoát</button>
         </aside>
 
-        <main class="main-content" id="main-ui">
+        <main class="main-content">
             <div id="tab-home" class="tab-ui">
                 <h1>Chào mừng trở lại!</h1>
-                <div class="card"><h3>Thông báo</h3><p>Hệ thống đã khớp với cấu trúc Sheet "Cam". Mọi dữ liệu đã sẵn sàng.</p></div>
+                <div class="card"><h3>Thông báo</h3><p>Đã cập nhật link GAS mới. Mọi kết nối hiện tại đã thông suốt.</p></div>
             </div>
-
             <div id="tab-comm" class="tab-ui hidden">
                 <h1>🌍 Dòng thời gian</h1>
-                <div class="card">
-                    <textarea id="p-text" placeholder="Viết gì đó..."></textarea>
-                    <button onclick="postStory()" id="p-btn">Đăng bài (+10đ)</button>
-                </div>
-                <div id="comm-list">Đang triệu hồi...</div>
+                <div class="card"><textarea id="p-text" placeholder="Viết khế ước của ông..."></textarea><button onclick="postStory()" id="p-btn">Đăng bài (+10đ)</button></div>
+                <div id="comm-list">Loading...</div>
             </div>
-
             <div id="tab-rank" class="tab-ui hidden">
-                <h1>🏆 Top 10 Linh Hồn</h1>
+                <h1>🏆 Top Linh Hồn</h1>
                 <div class="card" id="rank-list">Loading...</div>
             </div>
-
             <div id="tab-prof" class="tab-ui hidden">
                 <h1>👤 Hồ sơ cá nhân</h1>
                 <div class="card" style="text-align:center;">
                     <img src="https://tse3.mm.bing.net/th/id/OIP.udmBUbgmLJ27LmG6Toz-PAHaK-?rs=1&pid=ImgDetMain&o=7&rm=3" style="width:100px; border-radius:50%; border:3px solid var(--p-color); margin-bottom:15px;">
-                    <h2 id="pf-name" style="margin:0; color:var(--p-color);">---</h2>
+                    <h2 id="pf-name">---</h2>
                     <p id="pf-mail" style="color:#666;"></p>
-                    <b id="pf-pts" style="font-size:2rem; color:#28a745;">0</b><br><small>Điểm tích lũy</small>
+                    <b id="pf-pts" style="font-size:2rem; color:#28a745;">0</b><br><small>Điểm ma lực</small>
                 </div>
             </div>
-
             <div id="tab-find" class="tab-ui hidden">
-                <h1>🤝 Tìm kiếm bạn bè</h1>
-                <div class="card"><input type="text" id="search-box" placeholder="Nhập tên..." onkeyup="searchFriend()"></div>
+                <h1>🤝 Tìm bạn bè</h1>
+                <input type="text" id="search-box" placeholder="Nhập tên..." onkeyup="searchFriend()">
                 <div id="find-list"></div>
             </div>
         </main>
     </div>
 
     <script>
-        const GAS = "https://script.google.com/macros/s/AKfycbw-aLk6IZ-Opd5wVl9IhucR8S3J8hqtG21QEQovAITxjAKiCkifXS4EHRj24FdL8zVS/exec";
+        const GAS = "https://script.google.com/macros/s/AKfycbyfed75G0kHG4mF1XC2QHGc08tUrDReNmNWBgA5zdWs_iSMP03lq7pGThREcWy5EbGZ/exec";
         let authMode = "login";
 
         function hash(p) { return CryptoJS.SHA512(p).toString(); }
@@ -126,25 +118,25 @@
             const pass = hash(document.getElementById('password').value);
             const user = document.getElementById('username').value;
             const btn = document.getElementById('auth-btn');
-            btn.disabled = true; btn.innerText = "Đang xử lý...";
+            btn.disabled = true; btn.innerText = "Đang kết nối...";
 
             try {
                 if (authMode === "login") {
                     const res = await fetch(`${GAS}?action=login&mail=${mail}&pass=${pass}`);
                     const txt = await res.text();
-                    if (txt === "FOUND") enter(mail); else alert("Sai tài khoản!");
+                    if (txt.includes("FOUND")) enter(mail); else alert("Sai tài khoản!");
                 } else {
                     const res = await fetch(GAS, { method: "POST", body: JSON.stringify({ action: "signup", user, mail, pass }) });
                     const txt = await res.text();
-                    if (txt === "EXISTED") alert("Email đã tồn tại!"); else enter(mail, user);
+                    if (txt.includes("EXISTED")) alert("Email đã tồn tại!"); else enter(mail, user);
                 }
-            } catch (err) { alert("Lỗi kết nối!"); }
+            } catch (err) { alert("Lỗi kết nối ma giới!"); }
             btn.disabled = false; btn.innerText = "Ký khế ước";
         }
 
         function enter(m, u = "") {
             localStorage.setItem("sb_mail", m);
-            localStorage.setItem("sb_name", u || m.split('@')[0]);
+            if(u) localStorage.setItem("sb_name", u);
             location.reload();
         }
 
@@ -170,35 +162,4 @@
         }
 
         async function syncData() {
-            const res = await fetch(`${GAS}?action=getRank`);
-            const data = await res.json();
-            const me = data.find(u => u.mail === localStorage.getItem("sb_mail"));
-            if(me) {
-                document.getElementById('side-pts').innerText = me.points + "đ ma lực";
-                document.getElementById('pf-pts').innerText = me.points;
-                document.getElementById('pf-name').innerText = me.name;
-                document.getElementById('pf-mail').innerText = me.mail;
-            }
-            document.getElementById('rank-list').innerHTML = data.slice(0, 10).map((u, i) => `<div class="list-row"><span>#${i+1} ${u.name}</span><b>${u.points}đ</b></div>`).join('');
-            window.fullList = data;
-        }
-
-        function searchFriend() {
-            const key = document.getElementById('search-box').value.toLowerCase();
-            const result = window.fullList.filter(u => u.name.toLowerCase().includes(key));
-            document.getElementById('find-list').innerHTML = result.map(u => `<div class="card" style="display:flex; justify-content:space-between"><span>${u.name}</span><button style="width:auto; padding:5px 15px;" onclick="alert('Đã gửi khế ước!')">Kết bạn</button></div>`).join('');
-        }
-
-        window.onload = () => {
-            const m = localStorage.getItem("sb_mail");
-            if(m) {
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('home-screen').classList.remove('hidden');
-                document.getElementById('side-name').innerText = localStorage.getItem("sb_name");
-                syncData();
-            }
-        }
-        function logout() { localStorage.clear(); location.reload(); }
-    </script>
-</body>
-</html>
+            const res
