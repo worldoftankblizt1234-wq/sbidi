@@ -1,97 +1,121 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <base target="_top">
-    <style>
-        /* CSS tối giản, hiện đại */
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { background: #f4f4f9; }
-        .hidden { display: none !important; }
+// Cấu hình URL của Google Apps Script
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzCDGNc74gWMOqJGN74YFo92e9QEq-FBUQVkm-UAGhJeM8MMZMeetDNe8MXeYkA09tJ/exec";
+
+let isLogin = true;
+
+// --- PHẦN 1: XỬ LÝ ĐĂNG NHẬP / ĐĂNG KÝ (Ở index.html) ---
+
+function toggleForm() {
+    isLogin = !isLogin;
+    const formTitle = document.getElementById('form-title');
+    const toggleText = document.getElementById('toggle-text');
+    
+    if (formTitle) formTitle.innerText = isLogin ? "Đăng Nhập" : "Đăng Ký";
+    if (toggleText) toggleText.innerText = isLogin ? "Chưa có tài khoản? Đăng ký ngay" : "Đã có tài khoản? Đăng nhập";
+}
+
+async function handleAuth() {
+    const user = document.getElementById('username').value;
+    const pass = document.getElementById('password').value;
+    const action = isLogin ? "login" : "signup";
+
+    if (!user || !pass) return alert("Vui lòng nhập đủ thông tin!");
+
+    const btn = document.getElementById('main-btn');
+    const originalText = btn.innerText;
+    btn.innerText = "Đang xử lý...";
+    btn.disabled = true;
+
+    try {
+        await fetch(GAS_URL, {
+            method: "POST",
+            mode: "no-cors", 
+            body: JSON.stringify({ action, user, pass })
+        });
+
+        alert(isLogin ? "Đang kiểm tra đăng nhập..." : "Đang tạo tài khoản...");
         
-        /* Auth */
-        .auth-screen { display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .card { background: white; padding: 2rem; border-radius: 10px; shadow: 0 4px 6px rgba(0,0,0,0.1); width: 320px; text-align: center; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
-        button { width: 100%; padding: 10px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        setTimeout(() => {
+            if (isLogin) {
+                // Lưu tên user vào localStorage để dùng cho các trang sau
+                localStorage.setItem("username", user);
+                window.location.href = "home.html";
+            } else {
+                alert("Đăng ký hoàn tất! Giờ hãy đăng nhập nhé.");
+                toggleForm();
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }, 2000);
 
-        /* Navbar */
-        .navbar { background: #2c3e50; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
-        .points { background: #f1c40f; color: #333; padding: 4px 12px; border-radius: 15px; font-weight: bold; }
-        .hamburger { cursor: pointer; font-size: 24px; user-select: none; }
+    } catch (error) {
+        alert("Lỗi kết nối rồi ông ơi!");
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
 
-        /* Side Menu */
-        .menu { position: fixed; right: 0; top: 60px; background: white; width: 200px; box-shadow: -2px 0 5px rgba(0,0,0,0.1); display: none; }
-        .menu.active { display: block; }
-        .menu-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; color: #333; }
-        .menu-item:hover { background: #f0f0f0; }
-    </style>
-</head>
-<body>
+// --- PHẦN 2: XỬ LÝ TRANG CHỦ & ĐIỂM (Ở home.html) ---
 
-    <div id="auth-box" class="auth-screen">
-        <div class="card">
-            <h2 id="title">Đăng Nhập</h2>
-            <input type="text" id="user" placeholder="Email">
-            <input type="password" id="pass" placeholder="Mật khẩu">
-            <button onclick="doAuth()" id="btn">Xác nhận</button>
-            <p style="font-size:12px; margin-top:10px; color:blue; cursor:pointer" onclick="swap()">Chưa có nick? Đăng ký</p>
-        </div>
-    </div>
-
-    <div id="home-box" class="hidden">
-        <nav class="navbar">
-            <div>S-BIDI</div>
-            <div style="display:flex; align-items:center; gap:15px">
-                <div class="points"><span id="u-points">0</span> xu</div>
-                <div class="hamburger" onclick="toggleM()">☰</div>
-            </div>
-        </nav>
-
-        <div id="side-menu" class="menu">
-            <div class="menu-item" onclick="msg('Trang chủ')">Home</div>
-            <div class="menu-item" onclick="msg('Đổi điểm')">Đổi điểm</div>
-            <div class="menu-item" onclick="msg('Kết bạn')">Kết bạn</div>
-            <div class="menu-item" onclick="msg('Thông báo')">Thông báo</div>
-            <div class="menu-item" onclick="msg('Cộng đồng')">Cộng đồng</div>
-            <div class="menu-item" style="color:red" onclick="location.reload()">Thoát</div>
-        </div>
-
-        <div style="padding:20px; text-align:center">
-            <h3>Chào mừng bạn đã vào hệ thống!</h3>
-        </div>
-    </div>
-
-    <script>
-        let isLogin = true;
-        function swap() {
-            isLogin = !isLogin;
-            document.getElementById('title').innerText = isLogin ? "Đăng Nhập" : "Đăng Ký";
-        }
-
-        function toggleM() {
-            document.getElementById('side-menu').classList.toggle('active');
-        }
-
-        function doAuth() {
-            const u = document.getElementById('user').value;
-            const p = document.getElementById('pass').value;
-            if(!u || !p) return alert("Nhập đủ đã Minh ơi!");
-
-            document.getElementById('btn').innerText = "Chờ tí...";
+window.onload = () => {
+    const savedUser = localStorage.getItem("username");
+    
+    // Nếu đang ở trang home.html
+    if (window.location.pathname.includes("home.html")) {
+        if (!savedUser) {
+            // Nếu chưa đăng nhập mà đòi vào home thì đá về index
+            window.location.href = "index.html";
+        } else {
+            // Hiển thị tên người dùng
+            const userDisplay = document.getElementById("user-display");
+            const welcomeMsg = document.querySelector("h1");
             
-            google.script.run.withSuccessHandler(res => {
-                if(res.success) {
-                    document.getElementById('u-points').innerText = res.points;
-                    document.getElementById('auth-box').classList.add('hidden');
-                    document.getElementById('home-box').classList.remove('hidden');
-                } else {
-                    alert(res.msg);
-                    document.getElementById('btn').innerText = "Xác nhận";
-                }
-            }).processAuth(u, p, isLogin ? "signin" : "signup");
+            if (userDisplay) userDisplay.innerText = "Chào, " + savedUser;
+            if (welcomeMsg) welcomeMsg.innerText = `Chào mừng ${savedUser} đã quay trở lại!`;
+        }
+    }
+}
+
+async function addPost() {
+    const user = localStorage.getItem("username");
+    const content = document.getElementById("post-content").value;
+    const btn = document.getElementById("post-btn");
+
+    if (!content) return alert("Ông chưa viết nội dung mà!");
+
+    btn.innerText = "Đang lưu bài...";
+    btn.disabled = true;
+
+    try {
+        await fetch(GAS_URL, {
+            method: "POST",
+            mode: "no-cors",
+            body: JSON.stringify({ 
+                action: "addPoint", 
+                user: user, 
+                points: 10 
+            })
+        });
+
+        alert("Đăng bài thành công! +10 điểm.");
+        document.getElementById("post-content").value = "";
+        
+        // Cập nhật điểm tạm thời trên màn hình
+        const pointElement = document.getElementById("user-points");
+        if (pointElement) {
+            let currentPoints = parseInt(pointElement.innerText);
+            pointElement.innerText = currentPoints + 10;
         }
 
-        function msg(t) { alert("Tính năng " + t + " đang phát triển!"); toggleM(); }
-    </script>
-</body>
-</html>
+    } catch (error) {
+        alert("Không cộng được điểm rồi!");
+    } finally {
+        btn.innerText = "Đăng bài (+10 điểm)";
+        btn.disabled = false;
+    }
+}
+
+function logout() {
+    localStorage.removeItem("username");
+    window.location.href = "index.html";
+}
