@@ -10,7 +10,6 @@
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; color: white; overflow: hidden; }
         .hidden { display: none !important; }
 
-        /* MÀN HÌNH ĐĂNG NHẬP */
         .auth-container { 
             display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh;
             background: linear-gradient(rgba(18, 14, 24, 0.75), rgba(43, 27, 65, 0.85)), 
@@ -20,33 +19,30 @@
         #auth-avt { width: 130px; height: 130px; border-radius: 50%; border: 4px solid var(--p-color); margin-bottom: -65px; z-index: 10; object-fit: cover; box-shadow: 0 0 20px var(--p-color); }
         .auth-box { background: var(--sidebar); padding: 80px 40px 40px; border-radius: 20px; width: 320px; text-align: center; border: 1px solid var(--p-color); }
 
-        /* GIAO DIỆN CHÍNH */
         #home-screen { display: grid; grid-template-columns: 260px 1fr; height: 100vh; }
         .sidebar { background: var(--sidebar); border-right: 1px solid #444; padding: 20px; display: flex; flex-direction: column; gap: 5px; }
-        .sidebar-avt { width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--p-color); margin: 0 auto 10px; object-fit: cover; }
+        .sidebar-avt { width: 75px; height: 75px; border-radius: 50%; border: 2px solid var(--p-color); margin: 0 auto 10px; object-fit: cover; }
         .sidebar-label { font-size: 0.7rem; color: #6f2ca3; font-weight: bold; margin: 15px 0 5px 10px; text-transform: uppercase; }
         .menu-item { background: none; border: 1px solid transparent; color: #aaa; padding: 12px; text-align: left; border-radius: 8px; cursor: pointer; transition: 0.2s; }
         .menu-item:hover, .menu-item.active { background: rgba(209, 117, 255, 0.15); color: white; border-color: var(--p-color); }
 
         .main-content { padding: 40px; overflow-y: auto; background: var(--bg); transition: 0.3s; }
         .card { background: rgba(255, 255, 255, 0.04); padding: 20px; border-radius: 15px; border: 1px solid #333; margin-bottom: 20px; }
-        input, textarea, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #1a1520; color: white; box-sizing: border-box; }
+        input, textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #1a1520; color: white; box-sizing: border-box; }
         button { background: #6f2ca3; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
         button:hover { background: var(--p-color); box-shadow: 0 0 10px var(--p-color); }
-        
-        /* RANK & FRIEND ROW */
         .list-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #222; }
     </style>
 </head>
 <body>
 
     <div id="auth-screen" class="auth-container">
-        <img id="auth-avt" src="https://tse3.mm.bing.net/th/id/OIP.udmBUbgmLJ27LmG6To?rs=1&pid=ImgDetMain&o=7&rm=3">
+        <img id="auth-avt" src="https://tse3.mm.bing.net/th/id/OIP.udmBUbgmLJ27LmG6Toz-PAHaK-?rs=1&pid=ImgDetMain&o=7&rm=3">
         <div class="auth-box">
             <h2 style="color:var(--p-color); margin-top:0;">S-BIDI</h2>
             <form onsubmit="handleAuth(event)">
                 <input type="text" id="username" class="hidden" placeholder="Tên ma giới">
-                <input type="email" id="gmail" placeholder="Email của ông" required>
+                <input type="email" id="gmail" placeholder="Gmail @gmail.com" required>
                 <input type="password" id="password" placeholder="Mật khẩu" required>
                 <button type="submit" id="auth-btn">Ký khế ước</button>
             </form>
@@ -57,8 +53,8 @@
     <div id="home-screen" class="hidden">
         <aside class="sidebar">
             <div style="text-align:center; margin-bottom:15px;">
-                <img class="sidebar-avt" src="https://tse3.mm.bing.net/th/id/OIP.udmBUbgmLJ27LmG6?rs=1&pid=ImgDetMain&o=7&rm=3">
-                <b id="side-name" style="font-size:1.1rem;">Linh hồn</b><br>
+                <img class="sidebar-avt" src="https://tse3.mm.bing.net/th/id/OIP.udmBUbgmLJ27LmG6Toz-PAHaK-?rs=1&pid=ImgDetMain&o=7&rm=3">
+                <b id="side-name">Linh hồn</b><br>
                 <small id="side-pts" style="color:var(--p-color)">0đ ma lực</small>
             </div>
             
@@ -69,8 +65,7 @@
 
             <div class="sidebar-label">Cá nhân</div>
             <button class="menu-item" onclick="tab(event, 'prof')">👤 Hồ sơ</button>
-            <button class="menu-item" onclick="tab(event, 'find')">🤝 Tìm bạn bè</button>
-            <button class="menu-item" onclick="tab(event, 'set')">⚙️ Cài đặt</button>
+            <button class="menu-item" onclick="tab(event, 'find')">🤝 Tìm bạn</button>
             
             <button onclick="logout()" class="menu-item" style="color:#ff4d4d; margin-top:auto;">🚪 Thoát</button>
         </aside>
@@ -78,16 +73,16 @@
         <main class="main-content" id="main-ui">
             <div id="tab-home" class="tab-ui">
                 <h1>Chào mừng trở lại!</h1>
-                <div class="card"><h3>Thông báo Ma giới</h3><p>Hệ thống đã đồng bộ hóa với Google Sheets mới. Toàn bộ dữ liệu của ông đã được bảo mật bằng SHA-512.</p></div>
+                <div class="card"><h3>Thông báo</h3><p>Hệ thống đã khớp với cấu trúc Sheet "Cam". Mọi dữ liệu đã sẵn sàng.</p></div>
             </div>
 
             <div id="tab-comm" class="tab-ui hidden">
                 <h1>🌍 Dòng thời gian</h1>
                 <div class="card">
-                    <textarea id="p-text" placeholder="Viết gì đó đăng lên cộng đồng..."></textarea>
-                    <button onclick="postStory()" id="p-btn">Đăng lên cộng đồng (+10đ)</button>
+                    <textarea id="p-text" placeholder="Viết gì đó..."></textarea>
+                    <button onclick="postStory()" id="p-btn">Đăng bài (+10đ)</button>
                 </div>
-                <div id="comm-list">Loading...</div>
+                <div id="comm-list">Đang triệu hồi...</div>
             </div>
 
             <div id="tab-rank" class="tab-ui hidden">
@@ -98,7 +93,7 @@
             <div id="tab-prof" class="tab-ui hidden">
                 <h1>👤 Hồ sơ cá nhân</h1>
                 <div class="card" style="text-align:center;">
-                    <img src="https://tse3.mm.bing.net/th/id/OIP.udmBUbgmLJ27LmG6?rs=1&pid=ImgDetMain&o=7&rm=3" style="width:100px; border-radius:50%; border:3px solid var(--p-color); margin-bottom:15px;">
+                    <img src="https://tse3.mm.bing.net/th/id/OIP.udmBUbgmLJ27LmG6Toz-PAHaK-?rs=1&pid=ImgDetMain&o=7&rm=3" style="width:100px; border-radius:50%; border:3px solid var(--p-color); margin-bottom:15px;">
                     <h2 id="pf-name" style="margin:0; color:var(--p-color);">---</h2>
                     <p id="pf-mail" style="color:#666;"></p>
                     <b id="pf-pts" style="font-size:2rem; color:#28a745;">0</b><br><small>Điểm tích lũy</small>
@@ -107,21 +102,14 @@
 
             <div id="tab-find" class="tab-ui hidden">
                 <h1>🤝 Tìm kiếm bạn bè</h1>
-                <div class="card"><input type="text" id="search-box" placeholder="Nhập tên bạn bè..." onkeyup="searchFriend()"></div>
+                <div class="card"><input type="text" id="search-box" placeholder="Nhập tên..." onkeyup="searchFriend()"></div>
                 <div id="find-list"></div>
-            </div>
-
-            <div id="tab-set" class="tab-ui hidden">
-                <h1>⚙️ Cài đặt</h1>
-                <div class="card">
-                    <p>Chế độ sương mù: <input type="checkbox" style="width:auto;" onchange="document.getElementById('main-ui').style.backdropFilter = this.checked ? 'blur(20px)' : 'none'"></p>
-                </div>
             </div>
         </main>
     </div>
 
     <script>
-        const GAS = "https://script.google.com/macros/s/AKfycbwhFyKPZHDEsDodmGaOE0EB-p1CHwfukrh7-fF6o5jhENScrw8__vmWeMYxSBn-YDGOFQ/exec";
+        const GAS = "https://script.google.com/macros/s/AKfycbw-aLk6IZ-Opd5wVl9IhucR8S3J8hqtG21QEQovAITxjAKiCkifXS4EHRj24FdL8zVS/exec";
         let authMode = "login";
 
         function hash(p) { return CryptoJS.SHA512(p).toString(); }
@@ -144,13 +132,13 @@
                 if (authMode === "login") {
                     const res = await fetch(`${GAS}?action=login&mail=${mail}&pass=${pass}`);
                     const txt = await res.text();
-                    if (txt === "FOUND") enter(mail); else alert("Tài khoản không tồn tại!");
+                    if (txt === "FOUND") enter(mail); else alert("Sai tài khoản!");
                 } else {
                     const res = await fetch(GAS, { method: "POST", body: JSON.stringify({ action: "signup", user, mail, pass }) });
                     const txt = await res.text();
-                    if (txt === "EXISTED") alert("Email này đã có người dùng!"); else enter(mail, user);
+                    if (txt === "EXISTED") alert("Email đã tồn tại!"); else enter(mail, user);
                 }
-            } catch (err) { alert("Lỗi kết nối GAS!"); }
+            } catch (err) { alert("Lỗi kết nối!"); }
             btn.disabled = false; btn.innerText = "Ký khế ước";
         }
 
@@ -171,15 +159,14 @@
         async function postStory() {
             const content = document.getElementById('p-text').value;
             if(!content) return;
-            const btn = document.getElementById('p-btn'); btn.disabled = true;
             await fetch(GAS, { method: "POST", body: JSON.stringify({ action: "addPost", mail: localStorage.getItem("sb_mail"), user: localStorage.getItem("sb_name"), content }) });
-            document.getElementById('p-text').value = ""; btn.disabled = false; loadPosts(); syncData();
+            document.getElementById('p-text').value = ""; loadPosts(); syncData();
         }
 
         async function loadPosts() {
             const res = await fetch(`${GAS}?action=getPosts`);
             const data = await res.json();
-            document.getElementById('comm-list').innerHTML = data.map(p => `<div class="card"><b>@${p.user}</b><p>${p.content}</p><small style="color:#555">${new Date(p.time).toLocaleString()}</small></div>`).join('');
+            document.getElementById('comm-list').innerHTML = data.map(p => `<div class="card"><b>@${p.user}</b><p>${p.content}</p></div>`).join('');
         }
 
         async function syncData() {
@@ -193,15 +180,13 @@
                 document.getElementById('pf-mail').innerText = me.mail;
             }
             document.getElementById('rank-list').innerHTML = data.slice(0, 10).map((u, i) => `<div class="list-row"><span>#${i+1} ${u.name}</span><b>${u.points}đ</b></div>`).join('');
-            window.fullUserList = data; // Lưu để tìm kiếm bạn bè
+            window.fullList = data;
         }
 
         function searchFriend() {
             const key = document.getElementById('search-box').value.toLowerCase();
-            const list = document.getElementById('find-list');
-            if(!key) { list.innerHTML = ""; return; }
-            const result = window.fullUserList.filter(u => u.name.toLowerCase().includes(key));
-            list.innerHTML = result.map(u => `<div class="card" style="display:flex; justify-content:space-between"><span>${u.name}</span><button style="width:auto; padding:5px 15px;" onclick="alert('Đã gửi khế ước!')">Kết bạn</button></div>`).join('');
+            const result = window.fullList.filter(u => u.name.toLowerCase().includes(key));
+            document.getElementById('find-list').innerHTML = result.map(u => `<div class="card" style="display:flex; justify-content:space-between"><span>${u.name}</span><button style="width:auto; padding:5px 15px;" onclick="alert('Đã gửi khế ước!')">Kết bạn</button></div>`).join('');
         }
 
         window.onload = () => {
