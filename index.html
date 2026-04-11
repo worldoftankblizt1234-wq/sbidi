@@ -103,7 +103,7 @@
                         localStorage.setItem("s_bidi_name", mail.split('@')[0]);
                         location.reload();
                     } else {
-                        showMsg("Sai thông tin khế ước!", "error");
+                        showMsg("Sai thông tin tài khoản!", "error");
                         btn.innerText = "Xác nhận"; btn.disabled = false;
                     }
                 } else {
@@ -112,7 +112,7 @@
                     const checkTxt = await check.text();
                     
                     if (checkTxt === "EXISTED") {
-                        showMsg("Gmail này đã lập khế ước rồi!", "error");
+                        showMsg("Gmail này đã đươc tạo rồi!", "error");
                         btn.innerText = "Xác nhận"; btn.disabled = false;
                     } else {
                         // Nếu chưa trùng mới gửi POST để thêm dòng
