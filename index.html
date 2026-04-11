@@ -3,25 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S-BIDI - Hanako No.7</title>
+    <title>S-BIDI - Hanako Style Fixed</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #120e18; margin: 0; color: white; }
+        body { font-family: 'Segoe UI', sans-serif; background: #120e18; margin: 0; color: white; overflow-x: hidden; }
         .hidden { display: none !important; }
         
+        /* FIX NỀN: SỬ DỤNG ẢNH HD & CÂN CHỈNH */
         .auth-container { 
-            display: flex; justify-content: center; align-items: center; height: 100vh; 
+            display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw;
+            /* LINK ẢNH NỀN HANAKO-KUN HD MỚI, CHẤT LƯỢNG CAO HƠN */
             background-image: url('https://i.ibb.co/Xz9tG7g/Hanako-kun-Bia-01.jpg'); 
-            background-size: cover; background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover; /* Tự điều chỉnh, không làm kéo giãn, vỡ nét */
+            background-position: center;
         }
         
         .auth-box { 
-            background: rgba(43, 27, 65, 0.85); 
-            padding: 35px; border-radius: 20px; 
-            box-shadow: 0 0 25px rgba(111, 44, 163, 0.6);
+            background: rgba(43, 27, 65, 0.85); /* Tím đậm mờ ảo */
+            padding: 40px; border-radius: 20px; 
+            box-shadow: 0 10px 40px rgba(111, 44, 163, 0.6);
             width: 320px; text-align: center; border: 2px solid #d175ff; 
         }
         
-        h2 { color: #d175ff; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        h2 { color: #d175ff; text-shadow: 2px 2px 5px rgba(0,0,0,0.5); font-weight: bold; }
         input { 
             width: 100%; padding: 12px; margin: 10px 0; 
             border: 1px solid #6f2ca3; border-radius: 10px; box-sizing: border-box; 
@@ -36,9 +40,12 @@
             background: #6f2ca3; color: white; border: none; padding: 12px; 
             border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px;
         }
-        button:hover { background: #d175ff; box-shadow: 0 0 15px #d175ff; }
+        button:hover { background: #d175ff; box-shadow: 0 0 20px #d175ff; transform: translateY(-1px); }
         button:disabled { background: #444; }
         
+        #toggle-text { cursor:pointer; color:#d175ff; margin-top:15px; font-size:0.85rem; }
+        #toggle-text:hover { color: #f0f0f0; text-decoration: underline; }
+
         .navbar { background: #2b1b41; padding: 15px; display: flex; justify-content: space-between; border-bottom: 2px solid #6f2ca3; }
         .card { background: rgba(43, 27, 65, 0.7); padding: 30px; border-radius: 20px; margin: 20px auto; max-width: 450px; text-align: center; border: 1px solid #6f2ca3; }
     </style>
@@ -48,27 +55,28 @@
     <div id="auth-screen" class="auth-container">
         <div class="auth-box">
             <h2 id="form-title">S-BIDI</h2>
-            <input type="text" id="username" class="hidden" placeholder="Tên của bạn">
+            <p style="font-size: 0.8rem; color: #aaa; margin-bottom: 20px;">Khế ước ma giới đang đợi ông!</p>
+            <input type="text" id="username" class="hidden" placeholder="Tên hiển thị">
             <input type="email" id="gmail" placeholder="Địa chỉ @gmail.com">
-            <input type="password" id="password" placeholder="Mật khẩu ">
+            <input type="password" id="password" placeholder="Mật khẩu bí mật">
             <div id="msg" class="hidden"></div>
             <button onclick="handleAuth()" id="main-btn">Xác nhận</button>
-            <p id="toggle-text" onclick="toggleForm()" style="cursor:pointer; color:#d175ff; margin-top:15px; font-size:0.8rem;">Chưa có tài khoản? Đăng ký</p>
+            <p id="toggle-text" onclick="toggleForm()">Chưa có khế ước? Đăng ký</p>
         </div>
     </div>
 
     <div id="home-screen" class="hidden">
         <nav class="navbar"><b>S-BIDI</b> <span onclick="logout()" style="cursor:pointer; color:#ff4d4d">Thoát</span></nav>
         <div class="card">
-            <h3>Hồn ma: <span id="display-name" style="color:#d175ff"></span></h3>
-            <p>Năng lượng: <b id="user-points" style="font-size:2rem">0</b></p>
+            <h3>Chào mừng ông: <span id="display-name" style="color:#d175ff"></span></h3>
+            <p>Năng lượng ma giới: <b id="user-points" style="font-size:2.5rem; color:green">0</b></p>
             <textarea id="post-content" placeholder="Viết câu chuyện của ông..." style="width:100%; height:80px; background:#120e18; color:white; border:1px solid #6f2ca3; padding:10px; border-radius:10px;"></textarea>
             <button onclick="addPost()" id="post-btn">Đăng truyện (+10đ)</button>
         </div>
     </div>
 
     <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbx0TuHaaZ7ivMQqwWd_qsBVZ0sDahsvd80Kn2DwrVKWKSAyhs-1aLC7oD3qW_zk8IPt/exec";
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbx0TuHaaZ7ivMQqwWd_qsBVZ0sDahsvd80Kn2DwrVKWKSAyhs-1aLC7oD3qW_zk8IPt/exec"; // <-- Nhớ thay link GAS
         let isLogin = true;
 
         function showMsg(t, type) {
@@ -82,6 +90,7 @@
             document.getElementById('form-title').innerText = isLogin ? "S-BIDI" : "Đăng Ký";
             document.getElementById('username').classList.toggle('hidden', isLogin);
             document.getElementById('msg').classList.add('hidden');
+            document.getElementById('toggle-text').innerText = isLogin ? "Chưa có tài khoản? Đăng ký" : "Đã có tải khoản? Đăng nhập";
         }
 
         async function handleAuth() {
@@ -90,12 +99,14 @@
             const user = document.getElementById('username').value;
             const btn = document.getElementById('main-btn');
 
-            if (!mail || !pass) return showMsg("Thiếu thông tin rồi!", "error");
+            if (!mail || !pass) return showMsg("Điền đủ thông tin!", "error");
+            if (!mail.endsWith("@gmail.com")) return showMsg("Gmail phải là @gmail.com!", "error");
+
             btn.innerText = "Đang xử lý..."; btn.disabled = true;
 
             try {
                 if (isLogin) {
-                    // DIỆT BỌ: Check Đăng nhập
+                    // Dùng fetch GET để check tài khoản (GAS đã fix)
                     const res = await fetch(`${GAS_URL}?action=login&mail=${mail}&pass=${pass}`);
                     const txt = await res.text();
                     if (txt === "FOUND") {
@@ -103,41 +114,37 @@
                         localStorage.setItem("s_bidi_name", mail.split('@')[0]);
                         location.reload();
                     } else {
-                        showMsg("Sai thông tin tài khoản!", "error");
+                        showMsg("Sai thông tin khế ước!", "error");
                         btn.innerText = "Xác nhận"; btn.disabled = false;
                     }
                 } else {
-                    // DIỆT BỌ: Chống trùng mail khi Đăng ký
+                    // ĐĂNG KÝ: Check trùng mail
+                    if(!user) return showMsg("Thiếu tên hiển thị!", "error");
                     const check = await fetch(`${GAS_URL}?action=check_mail&mail=${mail}`);
                     const checkTxt = await check.text();
-                    
                     if (checkTxt === "EXISTED") {
-                        showMsg("Gmail này đã đươc tạo rồi!", "error");
+                        showMsg("Gmail này đã lập khế ước rồi!", "error");
                         btn.innerText = "Xác nhận"; btn.disabled = false;
                     } else {
-                        // Nếu chưa trùng mới gửi POST để thêm dòng
-                        await fetch(GAS_URL, {
-                            method: "POST",
-                            mode: "no-cors",
-                            body: JSON.stringify({ action: "signup", user, pass, mail })
-                        });
+                        await fetch(GAS_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "signup", user, pass, mail }) });
                         showMsg("Đăng ký thành công! Hãy Đăng nhập.", "success");
                         setTimeout(toggleForm, 1500);
                         btn.innerText = "Xác nhận"; btn.disabled = false;
                     }
                 }
             } catch (e) {
-                showMsg("Lỗi  hệ thống!", "error");
-                btn.disabled = false;
+                showMsg("Lỗi hệ thống!", "error");
+                btn.disabled = false; btn.innerText = "Xác nhận";
             }
         }
 
         window.onload = () => {
             const m = localStorage.getItem("s_bidi_mail");
+            const n = localStorage.getItem("s_bidi_name");
             if (m) {
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('home-screen').classList.remove('hidden');
-                document.getElementById('display-name').innerText = localStorage.getItem("s_bidi_name");
+                document.getElementById('display-name').innerText = n;
             }
         };
 
@@ -147,7 +154,7 @@
             if(!content) return;
             const btn = document.getElementById('post-btn');
             btn.disabled = true;
-            await fetch(GAS_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "addPoint", mail, points: 10 }) });
+            await fetch(GAS_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "addPoint", mail: mail, points: 10 }) });
             document.getElementById('post-content').value = "";
             let p = document.getElementById('user-points');
             p.innerText = parseInt(p.innerText) + 10;
