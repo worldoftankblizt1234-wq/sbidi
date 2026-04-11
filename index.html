@@ -47,7 +47,7 @@
         }
         button:hover { background: #d175ff; box-shadow: 0 0 20px #d175ff; transform: translateY(-1px); }
 
-        /* GIAO DIỆN HOME-SCREEN */
+        /* GIAO DIỆN CHÍNH */
         #home-screen { display: grid; grid-template-columns: 260px 1fr; height: 100vh; width: 100vw; background: #120e18; }
 
         .sidebar { 
@@ -61,7 +61,8 @@
             background: rgba(18, 14, 24, 0.6); border: 1px solid #6f2ca3; 
             padding: 15px; border-radius: 10px; width: 100%; text-align: center; margin-bottom: 30px; 
         }
-        
+        #user-points { font-size: 2rem; color: #28a745; margin-top: 5px; display: block; }
+
         .menu-item {
             width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px;
             background: none; border: 1px solid transparent; color: #aaa;
@@ -69,13 +70,25 @@
         }
         .menu-item:hover, .menu-item.active { background: rgba(111, 44, 163, 0.4); border-color: #6f2ca3; color: white; }
 
-        .main-content { padding: 40px; overflow-y: auto; }
+        .main-content { padding: 40px; overflow-y: auto; transition: 0.3s; }
         .content-section { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .card { background: rgba(43, 27, 65, 0.4); padding: 25px; border-radius: 15px; border: 1px solid #6f2ca3; margin-bottom: 20px; }
         .post-box { background: rgba(43, 27, 65, 0.6); padding: 25px; border-radius: 15px; border: 1px solid #6f2ca3; }
         #post-content { height: 150px; resize: none; }
+
+        /* CSS CÀI ĐẶT */
+        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(111, 44, 163, 0.2); }
+        .setting-title { font-weight: bold; color: #eee; }
+        .setting-desc { font-size: 0.8rem; color: #888; }
+        
+        .toggle-switch { position: relative; display: inline-block; width: 46px; height: 24px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .3s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background-color: #6f2ca3; }
+        input:checked + .slider:before { transform: translateX(22px); background-color: #d175ff; }
     </style>
 </head>
 <body>
@@ -84,11 +97,13 @@
         <img id="hanako-avatar" src="https://tse3.mm.bing.net/th/id/OIP.udmBUbgmLJ27LmG6Toz-PAHaK-?rs=1&pid=ImgDetMain&o=7&rm=3">
         <div class="auth-box">
             <h2 id="form-title" style="color: #d175ff;">S-BIDI</h2>
-            <input type="text" id="username" class="hidden" placeholder="Tên ma giới của ông">
-            <input type="email" id="gmail" placeholder="Địa chỉ @gmail.com">
-            <input type="password" id="password" placeholder="Mật khẩu (A, a, 1, @)">
-            <div id="msg" class="hidden"></div>
-            <button onclick="handleAuth()" id="main-btn">Xác nhận khế ước</button>
+            <form onsubmit="handleAuth(event)">
+                <input type="text" id="username" class="hidden" placeholder="Tên của bạn">
+                <input type="email" id="gmail" placeholder="Địa chỉ @gmail.com" required>
+                <input type="password" id="password" placeholder="Mật khẩu" required>
+                <div id="msg" class="hidden"></div>
+                <button type="submit" id="main-btn">Xác nhận khế ước</button>
+            </form>
             <p id="toggle-text" onclick="toggleForm()" style="cursor:pointer; color:#d175ff; margin-top:15px; font-size:0.85rem;">Chưa có tài khoản? Đăng ký</p>
         </div>
     </div>
@@ -102,11 +117,11 @@
                 <span style="font-size:0.7rem; color:#aaa;">Năng lượng tích lũy</span>
             </div>
             
-            <button class="menu-item active" onclick="showSection('home')">Trang Chủ</button>
-            <button class="menu-item" onclick="showSection('library')">Thư viện</button>
-            <button class="menu-item" onclick="showSection('my-stories')">Truyện của tôi</button>
-            <button class="menu-item" onclick="showSection('account')">Tài khoản</button>
-            <button class="menu-item" onclick="showSection('settings')">Cài đặt</button>
+            <button class="menu-item active" onclick="showSection(event, 'home')">Trang Chủ</button>
+            <button class="menu-item" onclick="showSection(event, 'library')">Thư viện</button>
+            <button class="menu-item" onclick="showSection(event, 'my-stories')">Truyện của tôi</button>
+            <button class="menu-item" onclick="showSection(event, 'account')">Tài khoản</button>
+            <button class="menu-item" onclick="showSection(event, 'settings')">Cài đặt</button>
 
             <button onclick="logout()" class="menu-item" style="color: #ff4d4d; margin-top: auto;">Đăng xuất</button>
         </aside>
@@ -116,14 +131,14 @@
                 <h1>Bảng Tin Ma Giới</h1>
                 <div class="card">
                     <h3>Chào mừng ông đã trở lại!</h3>
-                    <p>Hôm nay là một ngày đẹp trời để viết lách. Hãy ghé qua <b>Thư viện</b> để phong ấn những ý tưởng mới nhất của mình nhé.</p>
+                    <p>Hôm nay là một ngày đẹp trời để viết lách. Hãy ghé qua Thư viện nhé.</p>
                 </div>
             </div>
 
             <div id="section-library" class="content-section hidden">
                 <h1>Thư viện</h1>
                 <div class="post-box">
-                    <textarea id="post-content" placeholder="Viết khế ước truyện mới của ông vào đây..."></textarea>
+                    <textarea id="post-content" placeholder="Viết truyện mới g vào đây..."></textarea>
                     <div style="text-align: right;">
                         <button onclick="addPost()" id="post-btn" style="width: auto; padding: 12px 25px;">Đăng truyện (+10đ)</button>
                     </div>
@@ -132,24 +147,36 @@
 
             <div id="section-my-stories" class="content-section hidden">
                 <h1>Truyện của tôi</h1>
-                <div class="card">
-                    <p>Danh sách truyện ông đã đăng sẽ sớm xuất hiện tại đây.</p>
-                </div>
+                <div class="card"><p>Tính năng lưu trữ bản thảo đang được phát triển.</p></div>
             </div>
 
             <div id="section-account" class="content-section hidden">
                 <h1>Thông tin khế ước</h1>
                 <div class="card">
-                    <p><b>Tên ma giới:</b> <span id="acc-name"></span></p>
-                    <p><b>Địa chỉ phong ấn:</b> <span id="acc-mail"></span></p>
-                    <p><b>Xếp hạng:</b> Hồn ma tập sự</p>
+                    <p><b>Tên:</b> <span id="acc-name"></span></p>
+                    <p><b>Email:</b> <span id="acc-mail"></span></p>
+                    <p><b>Hạng:</b> Bí ẩn số 7</p>
                 </div>
             </div>
 
             <div id="section-settings" class="content-section hidden">
                 <h1>Cài đặt hệ thống</h1>
                 <div class="card">
-                    <p>Tính năng tùy chỉnh giao diện đang được Hanako phát triển.</p>
+                    <div class="setting-row">
+                        <div>
+                            <div class="setting-title">Hiệu ứng sương mù</div>
+                            <div class="setting-desc">Làm mờ nội dung để tăng độ ma mị.</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="fog-effect" onchange="toggleFog()">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-title">Thông báo ma giới</div>
+                        <label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label>
+                    </div>
+                    <button onclick="alert('Tính năng đổi mật khẩu sắp ra mắt!')" style="background:#444; width:auto; padding:10px 20px; margin-top:15px;">Đổi mật khẩu</button>
                 </div>
             </div>
         </main>
@@ -159,42 +186,39 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbx0TuHaaZ7ivMQqwWd_qsBVZ0sDahsvd80Kn2DwrVKWKSAyhs-1aLC7oD3qW_zk8IPt/exec"; 
         let isLogin = true;
 
-        // --- ĐIỀU KHIỂN CHUYỂN TRANG ---
-        function showSection(name) {
+        // CHUYỂN TRANG
+        function showSection(e, name) {
             document.querySelectorAll('.content-section').forEach(s => s.classList.add('hidden'));
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-            
             document.getElementById('section-' + name).classList.remove('hidden');
-            event.currentTarget.classList.add('active');
+            if(e) e.currentTarget.classList.add('active');
         }
 
-        // --- XỬ LÝ AUTH ---
+        function toggleFog() {
+            const isFog = document.getElementById('fog-effect').checked;
+            document.querySelector('.main-content').style.backdropFilter = isFog ? "blur(10px)" : "none";
+        }
+
+        // AUTH
         function showMsg(t, type) {
             const m = document.getElementById('msg');
             m.innerText = t; m.className = type === 'error' ? 'msg-error' : 'msg-success';
             m.classList.remove('hidden');
         }
 
-        function validateEmail(email) { return /^[a-zA-Z0-9](\.?[a-zA-Z0-9._%+-])+@gmail\.com$/.test(email); }
-        function validatePassword(pass) { return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(pass); }
-
         function toggleForm() {
             isLogin = !isLogin;
             document.getElementById('form-title').innerText = isLogin ? "S-BIDI" : "Đăng Ký";
             document.getElementById('username').classList.toggle('hidden', isLogin);
             document.getElementById('msg').classList.add('hidden');
-            document.getElementById('toggle-text').innerText = isLogin ? "Chưa có tài khoản? Đăng ký" : "Đã có tài khoản? Đăng nhập";
         }
 
-        async function handleAuth() {
+        async function handleAuth(e) {
+            e.preventDefault();
             const mail = document.getElementById('gmail').value;
             const pass = document.getElementById('password').value;
             const user = document.getElementById('username').value;
             const btn = document.getElementById('main-btn');
-
-            if (!mail || !pass) return showMsg("Thiếu thông tin!", "error");
-            if (!validateEmail(mail)) return showMsg("Gmail phải đúng định dạng @gmail.com!", "error");
-            if (!isLogin && !validatePassword(pass)) return showMsg("Mật khẩu cần A, a, 1, @ và 8 ký tự!", "error");
 
             btn.innerText = "Đang triệu hồi..."; btn.disabled = true;
 
@@ -205,15 +229,13 @@
                     if (txt === "FOUND") { saveAndEntry(mail); } 
                     else { showMsg("Sai thông tin khế ước!", "error"); btn.disabled = false; btn.innerText = "Xác nhận"; }
                 } else {
-                    const check = await fetch(`${GAS_URL}?action=check_mail&mail=${mail}`);
-                    const checkTxt = await check.text();
-                    if (checkTxt === "EXISTED") { showMsg("Gmail này đã tồn tại!", "error"); btn.disabled = false; } 
-                    else {
-                        await fetch(GAS_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "signup", user, pass, mail }) });
-                        saveAndEntry(mail, user);
-                    }
+                    await fetch(GAS_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "signup", user, pass, mail }) });
+                    saveAndEntry(mail, user);
                 }
-            } catch (e) { showMsg("Lỗi hệ thống!", "error"); btn.disabled = false; }
+            } catch (err) {
+                showMsg("Lỗi hệ thống ma pháp!", "error");
+                btn.disabled = false;
+            }
         }
 
         function saveAndEntry(mail, name = "") {
@@ -239,12 +261,12 @@
             const content = document.getElementById('post-content').value;
             if(!content) return;
             const btn = document.getElementById('post-btn');
-            btn.disabled = true;
+            btn.innerText = "Đang phong ấn..."; btn.disabled = true;
             await fetch(GAS_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ action: "addPoint", mail, points: 10 }) });
             document.getElementById('post-content').value = "";
             let p = document.getElementById('user-points');
             p.innerText = parseInt(p.innerText) + 10;
-            btn.disabled = false;
+            btn.innerText = "Đăng bài (+10đ)"; btn.disabled = false;
         }
 
         function logout() { localStorage.clear(); location.reload(); }
