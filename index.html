@@ -3,30 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S-BIDI - Hệ Thống Story & Point</title>
+    <title>S-BIDI</title>
     <style>
-        /* --- CSS: GIAO DIỆN GỘP CHUNG --- */
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f0f2f5; color: #333; }
+        body { font-family: sans-serif; margin: 0; background: #f0f2f5; }
         .hidden { display: none !important; }
-        
-        /* Giao diện Auth (Login/Signup) */
         .auth-container { display: flex; justify-content: center; align-items: center; height: 100vh; }
         .auth-box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 320px; text-align: center; }
-        .input-group input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        
-        /* Giao diện Trang Chủ */
-        .navbar { background: #007bff; color: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; }
-        .content-container { max-width: 600px; margin: 30px auto; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; }
-        .points-badge { font-size: 2.5rem; color: #28a745; font-weight: bold; }
-        textarea { width: 100%; height: 100px; margin: 15px 0; border-radius: 8px; border: 1px solid #ddd; padding: 10px; box-sizing: border-box; resize: none; }
-        
-        /* Nút bấm */
-        button { background: #007bff; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        button:hover { opacity: 0.9; }
-        button:disabled { background: #ccc; }
-        .btn-logout { background: #dc3545; padding: 6px 15px; }
-        #toggle-text { margin-top: 15px; color: #007bff; cursor: pointer; font-size: 0.85rem; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { background: #007bff; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; }
+        .navbar { background: #007bff; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .card { background: white; padding: 20px; border-radius: 10px; margin: 20px auto; max-width: 500px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        #toggle-text { color: #007bff; cursor: pointer; margin-top: 15px; font-size: 0.8rem; }
     </style>
 </head>
 <body>
@@ -34,10 +21,8 @@
     <div id="auth-screen" class="auth-container">
         <div class="auth-box">
             <h2 id="form-title">Đăng Nhập</h2>
-            <div class="input-group">
-                <input type="text" id="username" placeholder="Tên đăng nhập">
-                <input type="password" id="password" placeholder="Mật khẩu">
-            </div>
+            <input type="text" id="username" placeholder="Tên hiển thị">
+            <input type="email" id="gmail" class="hidden" placeholder="Địa chỉ Gmail"> <input type="password" id="password" placeholder="Mật khẩu">
             <button onclick="handleAuth()" id="main-btn">Xác nhận</button>
             <p id="toggle-text" onclick="toggleForm()">Chưa có tài khoản? Đăng ký ngay</p>
         </div>
@@ -45,118 +30,79 @@
 
     <div id="home-screen" class="hidden">
         <header class="navbar">
-            <div class="logo">S-BIDI</div>
-            <div class="user-info">
-                <span id="user-display">Chào ông!</span>
-                <button class="btn-logout" onclick="logout()">Thoát</button>
-            </div>
+            <span>S-BIDI</span>
+            <button onclick="logout()" style="width: auto; background: red; padding: 5px 10px;">Thoát</button>
         </header>
-
-        <main class="content-container">
-            <div class="card">
-                <h3>Điểm tích lũy của ông</h3>
-                <div class="points-badge">
-                    <span id="user-points">0</span> <small style="font-size: 1rem;">điểm</small>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>Đăng bài viết mới</h3>
-                <textarea id="post-content" placeholder="Ghi gì đó vào đây để nhận điểm..."></textarea>
-                <button id="post-btn" onclick="addPost()">Đăng ngay (+10 điểm)</button>
-            </div>
-        </main>
+        <div class="card">
+            <h3>Chào <span id="user-name"></span></h3>
+            <p>Điểm: <b id="user-points" style="font-size: 2rem; color: green;">0</b></p>
+            <textarea id="post-content" placeholder="Viết bài..." style="width:100%; height:80px;"></textarea>
+            <button onclick="addPost()">Đăng bài (+10 điểm)</button>
+        </div>
     </div>
 
     <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbzCDGNc74gWMOqJGN74YFo92e9QEq-FBUQVkm-UAGhJeM8MMZMeetDNe8MXeYkA09tJ/exec";
-        let isLoginMode = true;
-
-        // Kiểm tra xem đã đăng nhập chưa khi mở web
-        window.onload = () => {
-            const savedUser = localStorage.getItem("s_bidi_user");
-            if (savedUser) {
-                showHomeScreen(savedUser);
-            }
-        };
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbzwI4h9Hfh_Xpf600jq1W6vxy_zUUouTXFEBJi5mvr9jMtW7-47hXvsiWSWRPzPj301/exec";
+        let isLogin = true;
 
         function toggleForm() {
-            isLoginMode = !isLoginMode;
-            document.getElementById('form-title').innerText = isLoginMode ? "Đăng Nhập" : "Đăng Ký";
-            document.getElementById('toggle-text').innerText = isLoginMode ? "Chưa có tài khoản? Đăng ký ngay" : "Đã có tài khoản? Đăng nhập";
+            isLogin = !isLogin;
+            document.getElementById('form-title').innerText = isLogin ? "Đăng Nhập" : "Đăng Ký";
+            document.getElementById('gmail').classList.toggle('hidden', isLogin);
+            document.getElementById('toggle-text').innerText = isLogin ? "Chưa có tài khoản? Đăng ký ngay" : "Đã có tài khoản? Đăng nhập";
         }
 
         async function handleAuth() {
             const user = document.getElementById('username').value;
             const pass = document.getElementById('password').value;
-            const action = isLoginMode ? "login" : "signup";
+            const mail = document.getElementById('gmail').value;
+            const action = isLogin ? "login" : "signup";
 
-            if (!user || !pass) return alert("Nhập đủ thông tin đi ông!");
+            if(!user || !pass) return alert("Thiếu tên hoặc pass!");
 
-            const btn = document.getElementById('main-btn');
-            btn.innerText = "Chờ tí..."; btn.disabled = true;
+            document.getElementById('main-btn').innerText = "Đang xử lý...";
+            
+            await fetch(GAS_URL, {
+                method: "POST",
+                mode: "no-cors",
+                body: JSON.stringify({ action, user, pass, mail })
+            });
 
-            try {
-                // Bắn dữ liệu lên GAS
-                await fetch(GAS_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    body: JSON.stringify({ action, user, pass })
-                });
-
-                alert(isLoginMode ? "Đang vào hệ thống..." : "Đăng ký xong rồi đó!");
-                
-                setTimeout(() => {
-                    if (isLoginMode) {
-                        localStorage.setItem("s_bidi_user", user);
-                        showHomeScreen(user);
-                    } else {
-                        toggleForm();
-                        btn.innerText = "Xác nhận"; btn.disabled = false;
-                    }
-                }, 1500);
-            } catch (e) {
-                alert("Lỗi kết nối!");
-                btn.disabled = false;
+            alert(isLogin ? "Đang vào..." : "Đã gửi yêu cầu đăng ký!");
+            if(isLogin) {
+                localStorage.setItem("user", user);
+                location.reload();
+            } else {
+                toggleForm();
+                document.getElementById('main-btn').innerText = "Xác nhận";
             }
         }
 
-        function showHomeScreen(username) {
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('home-screen').classList.remove('hidden');
-            document.getElementById('user-display').innerText = "Chào, " + username;
-        }
+        window.onload = () => {
+            const saved = localStorage.getItem("user");
+            if(saved) {
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('home-screen').classList.remove('hidden');
+                document.getElementById('user-name').innerText = saved;
+            }
+        };
 
         async function addPost() {
-            const user = localStorage.getItem("s_bidi_user");
-            const content = document.getElementById("post-content").value;
-            if (!content) return alert("Viết gì đó đã chứ!");
+            const user = localStorage.getItem("user");
+            const content = document.getElementById('post-content').value;
+            if(!content) return;
 
-            const btn = document.getElementById("post-btn");
-            btn.innerText = "Đang lưu..."; btn.disabled = true;
-
-            try {
-                await fetch(GAS_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    body: JSON.stringify({ action: "addPoint", user: user, points: 10 })
-                });
-
-                alert("Đã cộng 10 điểm!");
-                document.getElementById("post-content").value = "";
-                let p = document.getElementById("user-points");
-                p.innerText = parseInt(p.innerText) + 10;
-            } catch (e) {
-                alert("Lỗi cộng điểm!");
-            } finally {
-                btn.innerText = "Đăng ngay (+10 điểm)"; btn.disabled = false;
-            }
+            await fetch(GAS_URL, {
+                method: "POST",
+                mode: "no-cors",
+                body: JSON.stringify({ action: "addPoint", user: user, points: 10 })
+            });
+            alert("Đã cộng điểm!");
+            let p = document.getElementById('user-points');
+            p.innerText = parseInt(p.innerText) + 10;
         }
 
-        function logout() {
-            localStorage.removeItem("s_bidi_user");
-            location.reload(); // Load lại trang để về màn hình Login
-        }
+        function logout() { localStorage.clear(); location.reload(); }
     </script>
 </body>
 </html>
