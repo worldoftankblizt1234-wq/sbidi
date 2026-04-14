@@ -7,6 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         :root { --p-color: #d175ff; --bg: #120e18; --sidebar: rgba(25, 15, 35, 0.98); }
+        * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; color: white; overflow: hidden; }
         .hidden { display: none !important; }
 
@@ -14,50 +15,238 @@
         .auth-container { 
             display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh;
             background: linear-gradient(rgba(18, 14, 24, 0.75), rgba(43, 27, 65, 0.85)), 
-                        url('https://tse1.mm.bing.net/th/id/OIP.TQ4MI__7gTr6dXigGr4WkwHaKQ?rs=1&pid=ImgDetMain&o=7&rm=3');
+                        url('https://i.ibb.co/0jKjKjK/hanako-bg.jpg');
             background-size: cover; background-position: center;
         }
-        #auth-avt { width: 130px; height: 130px; border-radius: 50%; border: 4px solid var(--p-color); margin-bottom: -65px; z-index: 10; object-fit: cover; box-shadow: 0 0 20px var(--p-color); }
-        .auth-box { background: var(--sidebar); padding: 80px 40px 40px; border-radius: 20px; width: 320px; text-align: center; border: 1px solid var(--p-color); }
+        #auth-avt { 
+            width: 130px; height: 130px; border-radius: 50%; border: 4px solid var(--p-color); 
+            margin-bottom: -65px; z-index: 10; object-fit: cover; box-shadow: 0 0 30px var(--p-color);
+            background: var(--sidebar);
+        }
+        .auth-box { 
+            background: var(--sidebar); padding: 80px 40px 40px; border-radius: 20px; 
+            width: 350px; text-align: center; border: 1px solid var(--p-color); 
+            box-shadow: 0 10px 40px rgba(209, 117, 255, 0.2);
+        }
+        .auth-box input { 
+            width: 100%; padding: 14px; margin: 10px 0; border-radius: 10px; 
+            border: 1px solid #444; background: #1a1520; color: white; 
+            font-size: 1rem; transition: 0.3s;
+        }
+        .auth-box input:focus { border-color: var(--p-color); outline: none; box-shadow: 0 0 10px rgba(209, 117, 255, 0.3); }
+        .auth-box button { 
+            background: #6f2ca3; color: white; border: none; padding: 14px; 
+            border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; 
+            font-size: 1rem; transition: 0.3s; margin-top: 10px;
+        }
+        .auth-box button:hover { background: var(--p-color); box-shadow: 0 0 15px var(--p-color); }
+        .auth-box button:disabled { opacity: 0.6; cursor: not-allowed; }
+        .error-message { color: #ff4444; font-size: 0.9rem; margin-top: 5px; min-height: 20px; }
 
         /* MAIN INTERFACE */
-        #home-screen { display: grid; grid-template-columns: 260px 1fr; height: 100vh; }
-        .sidebar { background: var(--sidebar); border-right: 1px solid #444; padding: 20px; display: flex; flex-direction: column; gap: 5px; }
-        .sidebar-avt { width: 75px; height: 75px; border-radius: 50%; border: 2px solid var(--p-color); margin: 0 auto 10px; object-fit: cover; }
-        .sidebar-label { font-size: 0.7rem; color: #6f2ca3; font-weight: bold; margin: 15px 0 5px 10px; text-transform: uppercase; }
-        .menu-item { background: none; border: 1px solid transparent; color: #aaa; padding: 12px; text-align: left; border-radius: 8px; cursor: pointer; transition: 0.2s; }
-        .menu-item:hover, .menu-item.active { background: rgba(209, 117, 255, 0.15); color: white; border-color: var(--p-color); }
+        #home-screen { display: grid; grid-template-columns: 280px 1fr; height: 100vh; }
+        .sidebar { 
+            background: var(--sidebar); border-right: 1px solid #333; 
+            padding: 25px 15px; display: flex; flex-direction: column; gap: 5px; 
+            backdrop-filter: blur(10px); overflow-y: auto;
+        }
+        .sidebar-avt { 
+            width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--p-color); 
+            margin: 0 auto 10px; object-fit: cover; 
+        }
+        .sidebar-label { 
+            font-size: 0.7rem; color: #6f2ca3; font-weight: bold; 
+            margin: 20px 0 5px 10px; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .menu-item { 
+            background: none; border: none; color: #aaa; padding: 12px 15px; 
+            text-align: left; border-radius: 10px; cursor: pointer; transition: 0.2s; 
+            font-size: 0.95rem; display: flex; align-items: center; gap: 10px;
+        }
+        .menu-item:hover, .menu-item.active { 
+            background: rgba(209, 117, 255, 0.15); color: white; 
+            border-left: 3px solid var(--p-color);
+        }
 
-        .main-content { padding: 40px; overflow-y: auto; background: var(--bg); }
-        .card { background: rgba(255, 255, 255, 0.04); padding: 20px; border-radius: 15px; border: 1px solid #333; margin-bottom: 20px; }
-        input, textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #1a1520; color: white; box-sizing: border-box; }
-        button { background: #6f2ca3; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
-        button:hover { background: var(--p-color); box-shadow: 0 0 10px var(--p-color); }
-        .list-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #222; }
+        .main-content { padding: 30px 40px; overflow-y: auto; background: var(--bg); }
+        .card { 
+            background: rgba(255, 255, 255, 0.04); padding: 20px; 
+            border-radius: 15px; border: 1px solid #333; margin-bottom: 15px; 
+        }
+        .card:hover { border-color: rgba(209, 117, 255, 0.3); }
+        input, textarea { 
+            width: 100%; padding: 12px 15px; margin: 10px 0; border-radius: 10px; 
+            border: 1px solid #444; background: #1a1520; color: white; 
+            font-size: 0.95rem;
+        }
+        button { 
+            background: #6f2ca3; color: white; border: none; padding: 10px 20px; 
+            border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; 
+        }
+        button:hover:not(:disabled) { background: var(--p-color); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .list-row { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 15px; border-bottom: 1px solid #222; 
+        }
+
+        /* REACTIONS */
+        .reaction-bar { display: flex; gap: 15px; margin: 15px 0; }
+        .reaction-btn {
+            background: none; border: none; color: #aaa; cursor: pointer;
+            font-size: 20px; padding: 5px 10px; border-radius: 20px;
+            transition: 0.2s; width: auto;
+        }
+        .reaction-btn:hover { background: rgba(209, 117, 255, 0.2); color: var(--p-color); }
+        .reaction-btn.active { color: var(--p-color); }
+
+        /* COMMENTS */
+        .comment-section { margin-top: 15px; padding-top: 15px; border-top: 1px solid #333; }
+        .comment { padding: 10px; margin: 5px 0; background: rgba(255,255,255,0.02); border-radius: 8px; }
+        .comment-input { display: flex; gap: 10px; margin-top: 10px; }
+        .comment-input input { flex: 1; margin: 0; }
+
+        /* FAVORITE BUTTON */
+        .favorite-btn {
+            background: none; border: none; color: #aaa; cursor: pointer;
+            font-size: 20px; padding: 5px; width: auto;
+        }
+        .favorite-btn.active { color: #ff4757; }
+
+        /* BADGES */
+        .badge {
+            display: inline-block; padding: 3px 10px; border-radius: 20px;
+            font-size: 12px; margin: 2px; background: rgba(209, 117, 255, 0.2);
+        }
+        .badge.gold { background: linear-gradient(135deg, #ffd700, #ff8c00); }
+        .badge.silver { background: linear-gradient(135deg, #c0c0c0, #808080); }
+        .badge.bronze { background: linear-gradient(135deg, #cd7f32, #8b4513); }
+
+        /* CHATBOT */
+        .chatbot-wrapper { position: fixed; bottom: 20px; right: 20px; z-index: 9999; }
+        .chatbot-toggle {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: linear-gradient(135deg, #6f2ca3, #d175ff);
+            border: 2px solid var(--p-color); box-shadow: 0 0 30px rgba(209, 117, 255, 0.5);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 28px; transition: 0.3s;
+        }
+        .chatbot-toggle:hover { transform: scale(1.1); }
+        .chatbot-container {
+            position: absolute; bottom: 75px; right: 0; width: 380px; height: 550px;
+            background: rgba(18, 14, 24, 0.98); border: 2px solid var(--p-color);
+            border-radius: 20px; backdrop-filter: blur(10px); display: none;
+            flex-direction: column; overflow: hidden; box-shadow: 0 0 50px rgba(111, 44, 163, 0.5);
+        }
+        .chatbot-container.open { display: flex; }
+        .chatbot-header {
+            background: linear-gradient(135deg, #6f2ca3, #2b1b41);
+            padding: 15px; display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid var(--p-color);
+        }
+        .api-selector { display: flex; gap: 5px; margin-left: 10px; }
+        .api-btn {
+            padding: 5px 10px; font-size: 11px; background: rgba(255,255,255,0.1);
+            border: 1px solid #6f2ca3; border-radius: 5px; cursor: pointer;
+        }
+        .api-btn.active { background: var(--p-color); border-color: white; }
+        .chatbot-messages {
+            flex: 1; overflow-y: auto; padding: 15px; display: flex;
+            flex-direction: column; gap: 10px;
+        }
+        .chat-message {
+            max-width: 80%; padding: 10px 15px; border-radius: 15px;
+            font-size: 0.9rem; line-height: 1.4; animation: fadeIn 0.3s;
+        }
+        .chat-message.bot {
+            background: rgba(111, 44, 163, 0.3); border: 1px solid #6f2ca3;
+            color: #eee; align-self: flex-start; border-bottom-left-radius: 5px;
+        }
+        .chat-message.user {
+            background: var(--p-color); color: white; align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+        .chatbot-input-area { display: flex; padding: 12px; border-top: 1px solid #6f2ca3; gap: 8px; }
+        .chatbot-input-area input {
+            flex: 1; background: #1a1520; border: 1px solid #6f2ca3;
+            border-radius: 25px; padding: 10px 15px; color: white; margin: 0;
+        }
+        .typing-indicator {
+            display: flex; gap: 5px; padding: 10px 15px;
+            background: rgba(111, 44, 163, 0.2); border-radius: 15px; width: fit-content;
+        }
+        .typing-indicator span {
+            width: 8px; height: 8px; background: var(--p-color);
+            border-radius: 50%; animation: typing 1.4s infinite;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-8px); opacity: 1; }
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* TOAST */
+        .toast {
+            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+            background: rgba(111, 44, 163, 0.95); color: white; padding: 12px 25px;
+            border-radius: 30px; border: 1px solid var(--p-color); z-index: 10000;
+            animation: fadeIn 0.3s; box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        }
+
+        /* LOADING */
+        .loading-spinner {
+            display: inline-block; width: 20px; height: 20px; border: 2px solid #333;
+            border-top: 2px solid var(--p-color); border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .tab-ui { display: block; }
+        .tab-ui.hidden { display: none !important; }
+
+        /* PROGRESS BAR */
+        .progress-bar {
+            background: #333; height: 8px; border-radius: 4px; margin: 5px 0;
+        }
+        .progress-fill {
+            background: var(--p-color); height: 8px; border-radius: 4px;
+            transition: width 0.3s;
+        }
     </style>
 </head>
 <body>
 
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container"></div>
+
+    <!-- AUTH SCREEN -->
     <div id="auth-screen" class="auth-container">
-        <img id="auth-avt" src="https://tse3.mm.bing.net/th/id/OIP.udmBUbgmLJ27LmG6Toz-PAHaK-?rs=1&pid=ImgDetMain&o=7&rm=3">
+        <img id="auth-avt" src="https://i.ibb.co/0jKjKjK/hanako-avt.jpg" onerror="this.src='https://via.placeholder.com/130/6f2ca3/white?text=S-BIDI'">
         <div class="auth-box">
-            <h2 style="color:var(--p-color); margin-top:0;">S-BIDI</h2>
-            <form onsubmit="handleAuth(event)">
-                <input type="text" id="username" class="hidden" placeholder="Tên hiển thị">
-                <input type="email" id="gmail" placeholder="Gmail @gmail.com" required>
-                <input type="password" id="password" placeholder="Mật khẩu" required>
+            <h2 style="color:var(--p-color); margin-top:0; font-size:2rem;">S-BIDI</h2>
+            <form id="authForm">
+                <input type="text" id="username" placeholder="Tên hiển thị" style="display:none;">
+                <input type="email" id="gmail" placeholder="Email" required>
+                <input type="password" id="password" placeholder="Mật khẩu (ít nhất 6 ký tự)" required minlength="6">
+                <input type="password" id="confirm-password" placeholder="Xác nhận mật khẩu" style="display:none;">
+                <div id="auth-error" class="error-message"></div>
                 <button type="submit" id="auth-btn">Ký khế ước</button>
             </form>
-            <p onclick="toggleAuth()" id="toggle-txt" style="font-size:0.8rem; cursor:pointer; margin-top:15px; color:#aaa;">Chưa có tài khoản? Đăng ký</p>
+            <p onclick="toggleAuth()" id="toggle-txt" style="font-size:0.9rem; cursor:pointer; margin-top:15px; color:#aaa;">
+                Chưa có tài khoản? <span style="color:var(--p-color);">Đăng ký</span>
+            </p>
         </div>
     </div>
 
+    <!-- MAIN SCREEN -->
     <div id="home-screen" class="hidden">
         <aside class="sidebar">
             <div style="text-align:center; margin-bottom:15px;">
-                <img class="sidebar-avt" src="https://tse3.mm.bing.net/th/id/OIP.udmBUbgmLJ27LmG6Toz-PAHaK-?rs=1&pid=ImgDetMain&o=7&rm=3">
+                <img class="sidebar-avt" src="https://i.ibb.co/0jKjKjK/hanako-avt.jpg" onerror="this.src='https://via.placeholder.com/80/6f2ca3/white?text=S'">
                 <b id="side-name">Linh hồn</b><br>
-                <small id="side-pts" style="color:var(--p-color)">0đ ma lực</small>
+                <small id="side-pts" style="color:var(--p-color);">0đ ma lực</small>
             </div>
             <div class="sidebar-label">Khám phá</div>
             <button class="menu-item active" onclick="tab(event, 'home')">🏠 Trang chủ</button>
@@ -66,73 +255,290 @@
             <div class="sidebar-label">Cá nhân</div>
             <button class="menu-item" onclick="tab(event, 'prof')">👤 Hồ sơ</button>
             <button class="menu-item" onclick="tab(event, 'find')">🤝 Tìm bạn</button>
+            <button class="menu-item" onclick="tab(event, 'favorites')">❤️ Yêu thích</button>
+            <button class="menu-item" onclick="tab(event, 'achievements')">🎖️ Thành tựu</button>
             <button onclick="logout()" class="menu-item" style="color:#ff4d4d; margin-top:auto;">🚪 Thoát</button>
         </aside>
 
         <main class="main-content">
+            <!-- HOME TAB -->
             <div id="tab-home" class="tab-ui">
-                <h1>Chào mừng trở lại!</h1>
-                <div class="card"><h3>Thông báo</h3><p>Đã cập nhật link GAS mới. Mọi kết nối hiện tại đã thông suốt.</p></div>
+                <h1>🏠 Chào mừng trở lại!</h1>
+                <div class="card">
+                    <h3>📢 Thông báo hệ thống</h3>
+                    <p>✨ S-BIDI đã cập nhật chatbot AI với 3 lựa chọn: Local, Gemini và OpenRouter!</p>
+                    <p>🔮 Hãy thử trò chuyện với trợ lý ảo ở góc phải màn hình và chọn API phù hợp nhé.</p>
+                </div>
+                <div class="card">
+                    <h3>🎯 Nhiệm vụ hàng ngày</h3>
+                    <div id="daily-quests">Đang tải...</div>
+                </div>
+                <div class="card">
+                    <h3>📖 Truyện mới nhất</h3>
+                    <div id="home-posts">Đang tải...</div>
+                </div>
             </div>
+
+            <!-- COMMUNITY TAB -->
             <div id="tab-comm" class="tab-ui hidden">
                 <h1>🌍 Dòng thời gian</h1>
-                <div class="card"><textarea id="p-text" placeholder="Viết khế ước của ông..."></textarea><button onclick="postStory()" id="p-btn">Đăng bài (+10đ)</button></div>
-                <div id="comm-list">Loading...</div>
+                <div class="card">
+                    <textarea id="p-text" placeholder="Viết khế ước của ông..." rows="3"></textarea>
+                    <button onclick="postStory()" id="p-btn" style="width:auto; padding:12px 25px;">📝 Đăng bài (+10đ)</button>
+                </div>
+                <div id="comm-list">Đang tải...</div>
             </div>
+
+            <!-- RANK TAB -->
             <div id="tab-rank" class="tab-ui hidden">
-                <h1>🏆 Top Linh Hồn</h1>
-                <div class="card" id="rank-list">Loading...</div>
+                <h1>🏆 Bảng xếp hạng Linh Hồn</h1>
+                <div class="card" id="rank-list">Đang tải...</div>
             </div>
+
+            <!-- PROFILE TAB -->
             <div id="tab-prof" class="tab-ui hidden">
                 <h1>👤 Hồ sơ cá nhân</h1>
                 <div class="card" style="text-align:center;">
-                    <img src="https://tse3.mm.bing.net/th/id/OIP.udmBUbgmLJ27LmG6Toz-PAHaK-?rs=1&pid=ImgDetMain&o=7&rm=3" style="width:100px; border-radius:50%; border:3px solid var(--p-color); margin-bottom:15px;">
+                    <img src="https://i.ibb.co/0jKjKjK/hanako-avt.jpg" onerror="this.src='https://via.placeholder.com/100/6f2ca3/white?text=S'" style="width:100px; border-radius:50%; border:3px solid var(--p-color); margin-bottom:15px;">
                     <h2 id="pf-name">---</h2>
-                    <p id="pf-mail" style="color:#666;"></p>
-                    <b id="pf-pts" style="font-size:2rem; color:#28a745;">0</b><br><small>Điểm ma lực</small>
+                    <p id="pf-mail" style="color:#888;"></p>
+                    <b id="pf-pts" style="font-size:2.5rem; color:#28a745;">0</b><br>
+                    <small style="color:#aaa;">Điểm ma lực</small>
+                    
+                    <div style="margin: 20px 0;">
+                        <textarea id="bio-input" placeholder="Viết giới thiệu về bản thân..." rows="3" style="width:100%;"></textarea>
+                        <button onclick="saveBio()" style="margin-top:10px;">💾 Lưu giới thiệu</button>
+                    </div>
+                    
+                    <p style="margin-top:20px;">
+                        <span id="pf-friends-count">0</span> bạn bè | 
+                        <span id="pf-favorites-count">0</span> truyện yêu thích
+                    </p>
+                    
+                    <div id="user-badges" style="margin-top:15px;"></div>
+                </div>
+                
+                <div class="card">
+                    <h3>📊 Thống kê hoạt động</h3>
+                    <div id="user-stats"></div>
                 </div>
             </div>
+
+            <!-- FIND FRIENDS TAB -->
             <div id="tab-find" class="tab-ui hidden">
                 <h1>🤝 Tìm bạn bè</h1>
-                <input type="text" id="search-box" placeholder="Nhập tên..." onkeyup="searchFriend()">
+                <div style="position:relative;">
+                    <input type="text" id="search-box" placeholder="🔍 Nhập tên linh hồn..." onkeyup="searchFriend()">
+                </div>
                 <div id="find-list"></div>
+            </div>
+            
+            <!-- FAVORITES TAB -->
+            <div id="tab-favorites" class="tab-ui hidden">
+                <h1>❤️ Truyện yêu thích</h1>
+                <div id="favorites-list"></div>
+            </div>
+            
+            <!-- ACHIEVEMENTS TAB -->
+            <div id="tab-achievements" class="tab-ui hidden">
+                <h1>🎖️ Thành tựu & Huy hiệu</h1>
+                <div class="card">
+                    <h3>🏅 Huy hiệu đã đạt được</h3>
+                    <div id="achievements-list"></div>
+                </div>
+                <div class="card">
+                    <h3>🎯 Thành tựu đang tiến hành</h3>
+                    <div id="achievements-progress"></div>
+                </div>
             </div>
         </main>
     </div>
 
+    <!-- CHATBOT -->
+    <div class="chatbot-wrapper">
+        <div class="chatbot-toggle" onclick="toggleChatbot()">👻</div>
+        <div class="chatbot-container" id="chatbotContainer">
+            <div class="chatbot-header">
+                <div style="display:flex; align-items:center; flex-wrap:wrap;">
+                    <h3 style="color:var(--p-color); margin:0;">🦊 Trợ lý S-BIDI</h3>
+                    <div class="api-selector">
+                        <button class="api-btn active" onclick="switchAPI('local')">👻 Local</button>
+                        <button class="api-btn" onclick="switchAPI('gemini')">🤖 Gemini</button>
+                        <button class="api-btn" onclick="switchAPI('openrouter')">🔄 OpenRouter</button>
+                    </div>
+                </div>
+                <button onclick="toggleChatbot()" style="background:none; width:auto; padding:5px 10px;">✕</button>
+            </div>
+            <div class="chatbot-messages" id="chatMessages">
+                <div class="chat-message bot">
+                    Xin chào! Tôi là trợ lý S-BIDI lấy cảm hứng từ Hanako-kun. 
+                    Bạn có thể chọn API ở trên: Local (miễn phí), Gemini hoặc OpenRouter. 
+                    Tôi có thể giúp gì cho bạn?
+                </div>
+            </div>
+            <div class="chatbot-input-area">
+                <input type="text" id="chatInput" placeholder="Hỏi tôi điều gì..." onkeypress="if(event.key==='Enter') sendChatMessage()">
+                <button onclick="sendChatMessage()" style="width:45px; height:45px; border-radius:50%; padding:0;">➤</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const GAS = "https://script.google.com/macros/s/AKfycbyfed75G0kHG4mF1XC2QHGc08tUrDReNmNWBgA5zdWs_iSMP03lq7pGThREcWy5EbGZ/exec";
+        // ==================== CONFIG ====================
+        const GAS = "https://script.google.com/macros/s/AKfycbwjiT-SSlNlhfxvDly1J0_VKTgvD9yjVgNgl-6pHfqi0uQHd9eD530cy67hhWcXchkf/exec";
+        
+        // ==================== API CONFIG ====================
+        const API_CONFIG = {
+            current: 'local'
+        };
+        
         let authMode = "login";
+        let friendsList = JSON.parse(localStorage.getItem("sb_friends") || "[]");
+        let favoritesList = JSON.parse(localStorage.getItem("sb_favorites") || "[]");
+        let userBio = localStorage.getItem("sb_bio") || "";
+        let userStats = JSON.parse(localStorage.getItem("sb_stats") || '{"posts":0,"comments":0,"reactions":0,"postsToday":0,"commentsToday":0,"reactionsToday":0}');
+        let userAchievements = JSON.parse(localStorage.getItem("sb_achievements") || "[]");
 
+        // ==================== ACHIEVEMENTS LIST ====================
+        const ACHIEVEMENTS = [
+            { id: 'first_post', name: '🌱 Người viết mới', desc: 'Đăng bài viết đầu tiên', badge: '🥉' },
+            { id: 'prolific_writer', name: '✍️ Nhà văn sung sức', desc: 'Đăng 10 bài viết', badge: '🥈' },
+            { id: 'commenter', name: '💬 Người bình luận', desc: 'Viết 5 bình luận', badge: '🥉' },
+            { id: 'first_favorite', name: '❤️ Người sưu tầm', desc: 'Thêm truyện vào yêu thích', badge: '🥉' },
+            { id: 'collector', name: '📚 Nhà sưu tập', desc: 'Có 5 truyện yêu thích', badge: '🥈' },
+            { id: 'popular', name: '⭐ Ngôi sao đang lên', desc: 'Nhận 10 reactions', badge: '🥇' }
+        ];
+
+        // ==================== UTILS ====================
         function hash(p) { return CryptoJS.SHA512(p).toString(); }
+        
+        function showToast(msg, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = msg;
+            toast.style.background = type === 'error' ? 'rgba(220, 53, 69, 0.95)' : 'rgba(111, 44, 163, 0.95)';
+            document.getElementById('toast-container').appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
 
+        function getTimeAgo(t) {
+            if (!t) return 'vừa xong';
+            const diff = (Date.now() - new Date(t)) / 1000;
+            if (diff < 60) return 'vừa xong';
+            if (diff < 3600) return Math.floor(diff/60) + ' phút trước';
+            if (diff < 86400) return Math.floor(diff/3600) + ' giờ trước';
+            return Math.floor(diff/86400) + ' ngày trước';
+        }
+
+        // ==================== AUTH ====================
         function toggleAuth() {
-            authMode = (authMode === "login") ? "signup" : "login";
-            document.getElementById('username').classList.toggle('hidden', authMode === "login");
-            document.getElementById('toggle-txt').innerText = authMode === "login" ? "Chưa có tài khoản? Đăng ký" : "Đã có tài khoản? Đăng nhập";
+            authMode = authMode === "login" ? "signup" : "login";
+            
+            const usernameInput = document.getElementById('username');
+            const confirmInput = document.getElementById('confirm-password');
+            const authBtn = document.getElementById('auth-btn');
+            const toggleTxt = document.getElementById('toggle-txt');
+            
+            if (authMode === "signup") {
+                usernameInput.style.display = "block";
+                usernameInput.required = true;
+                confirmInput.style.display = "block";
+                confirmInput.required = true;
+                authBtn.innerText = "Đăng ký";
+                toggleTxt.innerHTML = 'Đã có tài khoản? <span style="color:var(--p-color);">Đăng nhập</span>';
+            } else {
+                usernameInput.style.display = "none";
+                usernameInput.required = false;
+                confirmInput.style.display = "none";
+                confirmInput.required = false;
+                authBtn.innerText = "Ký khế ước";
+                toggleTxt.innerHTML = 'Chưa có tài khoản? <span style="color:var(--p-color);">Đăng ký</span>';
+            }
+            
+            document.getElementById('auth-error').textContent = '';
         }
 
-        async function handleAuth(e) {
+        document.getElementById('authForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const mail = document.getElementById('gmail').value;
-            const pass = hash(document.getElementById('password').value);
-            const user = document.getElementById('username').value;
+            
+            const mail = document.getElementById('gmail').value.trim();
+            const pass = document.getElementById('password').value;
+            const user = document.getElementById('username').value.trim();
+            const confirmPass = document.getElementById('confirm-password').value;
             const btn = document.getElementById('auth-btn');
-            btn.disabled = true; btn.innerText = "Đang kết nối...";
-
-            try {
-                if (authMode === "login") {
-                    const res = await fetch(`${GAS}?action=login&mail=${mail}&pass=${pass}`);
-                    const txt = await res.text();
-                    if (txt.includes("FOUND")) enter(mail); else alert("Sai tài khoản!");
-                } else {
-                    const res = await fetch(GAS, { method: "POST", body: JSON.stringify({ action: "signup", user, mail, pass }) });
-                    const txt = await res.text();
-                    if (txt.includes("EXISTED")) alert("Email đã tồn tại!"); else enter(mail, user);
+            const errorDiv = document.getElementById('auth-error');
+            
+            if (!mail.includes('@')) {
+                errorDiv.textContent = 'Vui lòng nhập email hợp lệ!';
+                return;
+            }
+            
+            if (pass.length < 6) {
+                errorDiv.textContent = 'Mật khẩu phải có ít nhất 6 ký tự!';
+                return;
+            }
+            
+            if (authMode === "signup") {
+                if (!user) {
+                    errorDiv.textContent = 'Vui lòng nhập tên hiển thị!';
+                    return;
                 }
-            } catch (err) { alert("Lỗi kết nối ma giới!"); }
-            btn.disabled = false; btn.innerText = "Ký khế ước";
-        }
+                if (pass !== confirmPass) {
+                    errorDiv.textContent = 'Mật khẩu xác nhận không khớp!';
+                    return;
+                }
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span> ' + (authMode === "login" ? "Đang đăng nhập..." : "Đang đăng ký...");
+            errorDiv.textContent = '';
+            
+            try {
+                const hashedPass = hash(pass);
+                
+                if (authMode === "login") {
+                    const res = await fetch(`${GAS}?action=login&mail=${encodeURIComponent(mail)}&pass=${encodeURIComponent(hashedPass)}`);
+                    const txt = await res.text();
+                    
+                    if (txt.includes("FOUND")) {
+                        showToast('Đăng nhập thành công!', 'success');
+                        enter(mail);
+                    } else {
+                        errorDiv.textContent = 'Email hoặc mật khẩu không đúng!';
+                        btn.disabled = false;
+                        btn.innerHTML = "Ký khế ước";
+                    }
+                } else {
+                    const res = await fetch(GAS, { 
+                        method: "POST", 
+                        body: JSON.stringify({ 
+                            action: "signup", 
+                            user: user, 
+                            mail: mail, 
+                            pass: hashedPass 
+                        }) 
+                    });
+                    const txt = await res.text();
+                    
+                    if (txt.includes("EXISTED")) {
+                        errorDiv.textContent = 'Email đã tồn tại!';
+                        btn.disabled = false;
+                        btn.innerHTML = "Đăng ký";
+                    } else if (txt.includes("SUCCESS")) {
+                        showToast('Đăng ký thành công!', 'success');
+                        enter(mail, user);
+                    } else {
+                        errorDiv.textContent = 'Lỗi đăng ký, thử lại sau!';
+                        btn.disabled = false;
+                        btn.innerHTML = "Đăng ký";
+                    }
+                }
+            } catch (err) {
+                errorDiv.textContent = 'Lỗi kết nối máy chủ!';
+                btn.disabled = false;
+                btn.innerHTML = authMode === "login" ? "Ký khế ước" : "Đăng ký";
+            }
+        });
 
         function enter(m, u = "") {
             localStorage.setItem("sb_mail", m);
@@ -140,26 +546,553 @@
             location.reload();
         }
 
+        function logout() { 
+            localStorage.clear(); 
+            location.reload(); 
+        }
+
+        // ==================== TABS ====================
         function tab(e, t) {
             document.querySelectorAll('.tab-ui').forEach(x => x.classList.add('hidden'));
             document.querySelectorAll('.menu-item').forEach(x => x.classList.remove('active'));
             document.getElementById('tab-' + t).classList.remove('hidden');
             if(e) e.currentTarget.classList.add('active');
-            if(t === 'comm') loadPosts(); if(t === 'rank' || t === 'prof') syncData();
+            
+            if(t === 'comm') loadPosts();
+            if(t === 'rank' || t === 'prof') syncData();
+            if(t === 'home') { loadHomePosts(); loadDailyQuests(); }
+            if(t === 'find') document.getElementById('find-list').innerHTML = '';
+            if(t === 'favorites') loadFavorites();
+            if(t === 'achievements') loadAchievements();
+        }
+
+        // ==================== DAILY QUESTS ====================
+        function loadDailyQuests() {
+            const quests = [
+                { name: 'Đăng 1 bài viết', reward: 10, progress: userStats.postsToday || 0, target: 1 },
+                { name: 'Bình luận 3 bài', reward: 5, progress: userStats.commentsToday || 0, target: 3 },
+                { name: 'Thả reaction 5 lần', reward: 5, progress: userStats.reactionsToday || 0, target: 5 }
+            ];
+            
+            document.getElementById('daily-quests').innerHTML = quests.map(q => `
+                <div style="margin:10px 0;">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>${q.name}</span>
+                        <span style="color:var(--p-color);">+${q.reward}đ</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width:${Math.min(100, (q.progress/q.target)*100)}%;"></div>
+                    </div>
+                    <small>${q.progress}/${q.target}</small>
+                    ${q.progress >= q.target ? '<span style="color:#28a745; margin-left:10px;">✓ Hoàn thành</span>' : ''}
+                </div>
+            `).join('');
+        }
+
+        // ==================== POSTS ====================
+        async function loadHomePosts() {
+            try {
+                const res = await fetch(`${GAS}?action=getPosts`);
+                const data = await res.json();
+                document.getElementById('home-posts').innerHTML = data.slice(0, 3).map(p => 
+                    `<div style="padding:10px 0; border-bottom:1px solid #333;">
+                        <b>@${p.user}</b><br>
+                        <small style="color:#888;">${p.content?.substring(0, 50) || ''}...</small>
+                    </div>`
+                ).join('') || '<p style="color:#888;">Chưa có bài viết nào</p>';
+            } catch(e) { 
+                document.getElementById('home-posts').innerHTML = '<p>Không thể tải</p>'; 
+            }
         }
 
         async function postStory() {
-            const content = document.getElementById('p-text').value;
-            if(!content) return;
-            await fetch(GAS, { method: "POST", body: JSON.stringify({ action: "addPost", mail: localStorage.getItem("sb_mail"), user: localStorage.getItem("sb_name"), content }) });
-            document.getElementById('p-text').value = ""; loadPosts(); syncData();
+            const content = document.getElementById('p-text').value.trim();
+            if(!content) { 
+                showToast('Vui lòng nhập nội dung!', 'error'); 
+                return; 
+            }
+            
+            const btn = document.getElementById('p-btn');
+            btn.disabled = true; 
+            btn.innerHTML = '<span class="loading-spinner"></span> Đang đăng...';
+            
+            try {
+                await fetch(GAS, { 
+                    method: "POST", 
+                    body: JSON.stringify({ 
+                        action: "addPost", 
+                        mail: localStorage.getItem("sb_mail"), 
+                        user: localStorage.getItem("sb_name") || "Linh hồn", 
+                        content 
+                    }) 
+                });
+                document.getElementById('p-text').value = ""; 
+                
+                userStats.posts = (userStats.posts || 0) + 1;
+                userStats.postsToday = (userStats.postsToday || 0) + 1;
+                localStorage.setItem("sb_stats", JSON.stringify(userStats));
+                
+                checkAchievement('first_post');
+                if(userStats.posts >= 10) checkAchievement('prolific_writer');
+                
+                loadPosts(); 
+                syncData();
+                showToast('Đăng bài thành công! +10đ ma lực', 'success');
+            } catch(e) { 
+                showToast('Lỗi đăng bài!', 'error'); 
+            }
+            
+            btn.disabled = false; 
+            btn.innerHTML = '📝 Đăng bài (+10đ)';
         }
 
         async function loadPosts() {
-            const res = await fetch(`${GAS}?action=getPosts`);
-            const data = await res.json();
-            document.getElementById('comm-list').innerHTML = data.map(p => `<div class="card"><b>@${p.user}</b><p>${p.content}</p></div>`).join('');
+            document.getElementById('comm-list').innerHTML = '<div style="text-align:center; padding:20px;"><span class="loading-spinner"></span></div>';
+            try {
+                const res = await fetch(`${GAS}?action=getPosts`);
+                const data = await res.json();
+                document.getElementById('comm-list').innerHTML = data.map((p, index) => {
+                    const postId = p.id || `post_${index}`;
+                    const reactions = JSON.parse(localStorage.getItem(`reactions_${postId}`) || '{"👍":0,"❤️":0,"😮":0,"👏":0}');
+                    const userReaction = localStorage.getItem(`userReaction_${postId}_${localStorage.getItem("sb_mail")}`);
+                    const isFavorite = favoritesList.includes(postId);
+                    
+                    return `
+                    <div class="card" id="post-${postId}">
+                        <div style="display:flex; justify-content:space-between; align-items:start;">
+                            <div>
+                                <b>@${p.user || 'Ẩn danh'}</b> 
+                                <small style="color:#666;">• ${getTimeAgo(p.time)}</small>
+                            </div>
+                            <div>
+                                <button class="favorite-btn ${isFavorite ? 'active' : ''}" onclick="toggleFavorite('${postId}')">❤️</button>
+                            </div>
+                        </div>
+                        <p style="margin-top:10px;">${p.content || ''}</p>
+                        
+                        <div class="reaction-bar">
+                            <button class="reaction-btn ${userReaction === '👍' ? 'active' : ''}" onclick="addReaction('${postId}', '👍')">👍 ${reactions['👍']}</button>
+                            <button class="reaction-btn ${userReaction === '❤️' ? 'active' : ''}" onclick="addReaction('${postId}', '❤️')">❤️ ${reactions['❤️']}</button>
+                            <button class="reaction-btn ${userReaction === '😮' ? 'active' : ''}" onclick="addReaction('${postId}', '😮')">😮 ${reactions['😮']}</button>
+                            <button class="reaction-btn ${userReaction === '👏' ? 'active' : ''}" onclick="addReaction('${postId}', '👏')">👏 ${reactions['👏']}</button>
+                            <button class="reaction-btn" onclick="showComments('${postId}')">💬 Bình luận</button>
+                        </div>
+                        
+                        <div id="comments-${postId}" style="display:none;" class="comment-section"></div>
+                    </div>
+                `}).join('') || '<p style="color:#888;">Chưa có bài viết nào. Hãy là người đầu tiên!</p>';
+            } catch(e) { 
+                document.getElementById('comm-list').innerHTML = '<p>Không thể tải bài viết</p>'; 
+            }
         }
 
+        function addReaction(postId, type) {
+            const userMail = localStorage.getItem("sb_mail");
+            const currentReaction = localStorage.getItem(`userReaction_${postId}_${userMail}`);
+            
+            let reactions = JSON.parse(localStorage.getItem(`reactions_${postId}`) || '{"👍":0,"❤️":0,"😮":0,"👏":0}');
+            
+            if (currentReaction === type) {
+                reactions[type] = Math.max(0, reactions[type] - 1);
+                localStorage.removeItem(`userReaction_${postId}_${userMail}`);
+            } else {
+                if (currentReaction) {
+                    reactions[currentReaction] = Math.max(0, reactions[currentReaction] - 1);
+                }
+                reactions[type] = (reactions[type] || 0) + 1;
+                localStorage.setItem(`userReaction_${postId}_${userMail}`, type);
+                
+                userStats.reactions = (userStats.reactions || 0) + 1;
+                userStats.reactionsToday = (userStats.reactionsToday || 0) + 1;
+                localStorage.setItem("sb_stats", JSON.stringify(userStats));
+                
+                if(userStats.reactions >= 10) checkAchievement('popular');
+            }
+            
+            localStorage.setItem(`reactions_${postId}`, JSON.stringify(reactions));
+            loadPosts();
+            showToast(`Đã ${currentReaction === type ? 'bỏ' : 'thả'} reaction!`, 'success');
+        }
+
+        function showComments(postId) {
+            const commentsDiv = document.getElementById(`comments-${postId}`);
+            const isVisible = commentsDiv.style.display !== 'none';
+            
+            if (isVisible) {
+                commentsDiv.style.display = 'none';
+                return;
+            }
+            
+            const comments = JSON.parse(localStorage.getItem(`comments_${postId}`) || '[]');
+            
+            commentsDiv.style.display = 'block';
+            commentsDiv.innerHTML = `
+                <h4>💬 Bình luận (${comments.length})</h4>
+                <div id="comment-list-${postId}">
+                    ${comments.map(c => `
+                        <div class="comment">
+                            <b>@${c.user}</b> <small>${getTimeAgo(c.time)}</small>
+                            <p style="margin:5px 0;">${c.text}</p>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="comment-input">
+                    <input type="text" id="comment-input-${postId}" placeholder="Viết bình luận..." onkeypress="if(event.key==='Enter') addComment('${postId}')">
+                    <button onclick="addComment('${postId}')">Gửi</button>
+                </div>
+            `;
+        }
+
+        function addComment(postId) {
+            const input = document.getElementById(`comment-input-${postId}`);
+            const text = input.value.trim();
+            if (!text) return;
+            
+            const userName = localStorage.getItem("sb_name") || "Linh hồn";
+            
+            let comments = JSON.parse(localStorage.getItem(`comments_${postId}`) || '[]');
+            comments.push({
+                user: userName,
+                text: text,
+                time: new Date().toISOString()
+            });
+            
+            localStorage.setItem(`comments_${postId}`, JSON.stringify(comments));
+            
+            userStats.comments = (userStats.comments || 0) + 1;
+            userStats.commentsToday = (userStats.commentsToday || 0) + 1;
+            localStorage.setItem("sb_stats", JSON.stringify(userStats));
+            
+            if(userStats.comments >= 5) checkAchievement('commenter');
+            
+            showComments(postId);
+            showToast('Đã thêm bình luận!', 'success');
+        }
+
+        // ==================== FAVORITES ====================
+        function toggleFavorite(postId) {
+            const index = favoritesList.indexOf(postId);
+            if (index > -1) {
+                favoritesList.splice(index, 1);
+                showToast('Đã xóa khỏi yêu thích', 'info');
+            } else {
+                favoritesList.push(postId);
+                showToast('Đã thêm vào yêu thích! ❤️', 'success');
+                checkAchievement('first_favorite');
+                if(favoritesList.length >= 5) checkAchievement('collector');
+            }
+            localStorage.setItem("sb_favorites", JSON.stringify(favoritesList));
+            loadPosts();
+        }
+
+        function loadFavorites() {
+            const favDiv = document.getElementById('favorites-list');
+            if (favoritesList.length === 0) {
+                favDiv.innerHTML = '<p style="color:#888;">Chưa có truyện yêu thích nào</p>';
+                return;
+            }
+            favDiv.innerHTML = `<p style="color:var(--p-color);">📚 ${favoritesList.length} truyện yêu thích</p>`;
+        }
+
+        // ==================== ACHIEVEMENTS ====================
+        function checkAchievement(achId) {
+            if (!userAchievements.includes(achId)) {
+                userAchievements.push(achId);
+                localStorage.setItem("sb_achievements", JSON.stringify(userAchievements));
+                
+                const ach = ACHIEVEMENTS.find(a => a.id === achId);
+                showToast(`🎉 Đạt thành tựu: ${ach.name}!`, 'success');
+            }
+        }
+
+        function loadAchievements() {
+            const achieved = ACHIEVEMENTS.filter(a => userAchievements.includes(a.id));
+            const progress = ACHIEVEMENTS.filter(a => !userAchievements.includes(a.id));
+            
+            document.getElementById('achievements-list').innerHTML = achieved.length > 0 
+                ? achieved.map(a => `
+                    <div class="badge" style="margin:5px; padding:10px;">
+                        ${a.badge} ${a.name}<br>
+                        <small>${a.desc}</small>
+                    </div>
+                `).join('')
+                : '<p style="color:#888;">Chưa có thành tựu nào. Hãy tích cực hoạt động nhé!</p>';
+            
+            document.getElementById('achievements-progress').innerHTML = progress.map(a => {
+                let current = 0, target = 1;
+                if (a.id === 'prolific_writer') { current = userStats.posts || 0; target = 10; }
+                else if (a.id === 'commenter') { current = userStats.comments || 0; target = 5; }
+                else if (a.id === 'collector') { current = favoritesList.length; target = 5; }
+                else if (a.id === 'popular') { current = userStats.reactions || 0; target = 10; }
+                
+                const percent = Math.min(100, (current/target)*100);
+                
+                return `
+                    <div style="margin:10px 0;">
+                        <div style="display:flex; justify-content:space-between;">
+                            <span>${a.badge} ${a.name}</span>
+                            <span>${current}/${target}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width:${percent}%;"></div>
+                        </div>
+                        <small>${a.desc}</small>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ==================== PROFILE ====================
+        function saveBio() {
+            const bio = document.getElementById('bio-input').value;
+            localStorage.setItem("sb_bio", bio);
+            showToast('Đã lưu giới thiệu!', 'success');
+        }
+
+        // ==================== RANK & SYNC ====================
         async function syncData() {
-            const res
+            try {
+                const res = await fetch(`${GAS}?action=getRank`);
+                const data = await res.json();
+                const me = data.find(u => u.mail === localStorage.getItem("sb_mail"));
+                
+                if(me) {
+                    localStorage.setItem("sb_name", me.name);
+                    document.getElementById('side-name').innerText = me.name || 'Linh hồn';
+                    document.getElementById('side-pts').innerText = (me.points || 0) + "đ ma lực";
+                    document.getElementById('pf-name').innerText = me.name || '---';
+                    document.getElementById('pf-mail').innerText = me.mail || '';
+                    document.getElementById('pf-pts').innerText = me.points || 0;
+                }
+                
+                document.getElementById('bio-input').value = userBio;
+                document.getElementById('pf-favorites-count').innerText = favoritesList.length;
+                
+                const achieved = ACHIEVEMENTS.filter(a => userAchievements.includes(a.id));
+                document.getElementById('user-badges').innerHTML = achieved.map(a => 
+                    `<span class="badge">${a.badge} ${a.name}</span>`
+                ).join('') || '<span style="color:#888;">Chưa có huy hiệu</span>';
+                
+                document.getElementById('user-stats').innerHTML = `
+                    <p>📝 Bài viết: ${userStats.posts || 0}</p>
+                    <p>💬 Bình luận: ${userStats.comments || 0}</p>
+                    <p>🎯 Reactions: ${userStats.reactions || 0}</p>
+                `;
+                
+                const medals = ['🥇', '🥈', '🥉'];
+                document.getElementById('rank-list').innerHTML = data.slice(0, 10).map((u, i) => `
+                    <div class="list-row">
+                        <span>${i < 3 ? medals[i] : '#'+(i+1)} ${u.name || 'Ẩn danh'}</span>
+                        <b style="color:var(--p-color);">${u.points || 0}đ</b>
+                    </div>
+                `).join('');
+                
+                window.fullList = data;
+                
+                const friendCount = friendsList.filter(f => data.some(u => u.mail === f)).length;
+                document.getElementById('pf-friends-count').innerText = friendCount;
+                
+            } catch(e) { 
+                console.error('Sync error:', e); 
+            }
+        }
+
+        // ==================== FRIENDS ====================
+        function searchFriend() {
+            const key = document.getElementById('search-box').value.toLowerCase();
+            if (!key) { 
+                document.getElementById('find-list').innerHTML = '<p style="color:#888;">Nhập tên để tìm kiếm</p>'; 
+                return; 
+            }
+            
+            const res = window.fullList?.filter(u => 
+                u.name?.toLowerCase().includes(key) && 
+                u.mail !== localStorage.getItem("sb_mail")
+            ) || [];
+            
+            document.getElementById('find-list').innerHTML = res.map(u => {
+                const isFriend = friendsList.includes(u.mail);
+                return `
+                    <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                        <span><b>${u.name || 'Ẩn danh'}</b><br><small style="color:#888;">${u.points || 0}đ</small></span>
+                        <button style="width:auto; padding:8px 20px;" 
+                            onclick="addFriend('${u.mail}', '${u.name}')"
+                            ${isFriend ? 'disabled' : ''}>
+                            ${isFriend ? '✓ Đã kết bạn' : '🤝 Kết bạn'}
+                        </button>
+                    </div>
+                `;
+            }).join('') || '<p style="color:#888;">Không tìm thấy linh hồn nào</p>';
+        }
+
+        function addFriend(mail, name) {
+            if (!friendsList.includes(mail)) {
+                friendsList.push(mail);
+                localStorage.setItem("sb_friends", JSON.stringify(friendsList));
+                showToast(`Đã kết bạn với ${name}!`, 'success');
+                searchFriend();
+                syncData();
+            }
+        }
+
+        // ==================== CHATBOT ====================
+        function toggleChatbot() {
+            document.getElementById('chatbotContainer').classList.toggle('open');
+        }
+
+        function switchAPI(api) {
+            API_CONFIG.current = api;
+            
+            document.querySelectorAll('.api-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            const messages = {
+                local: '👻 Đã chuyển sang chế độ Local (miễn phí, phản hồi có sẵn)',
+                gemini: '🤖 Đã chuyển sang Gemini API',
+                openrouter: '🔄 Đã chuyển sang OpenRouter'
+            };
+            
+            appendChatMessage(messages[api], 'bot');
+            localStorage.setItem('chatbot_api', api);
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            appendChatMessage(message, 'user');
+            input.value = '';
+            showChatTyping();
+            
+            let response;
+            
+            try {
+                switch(API_CONFIG.current) {
+                    case 'gemini':
+                        response = await callGeminiAPI(message);
+                        break;
+                    case 'openrouter':
+                        response = await callOpenRouterAPI(message);
+                        break;
+                    default:
+                        response = await callLocalAI(message);
+                }
+                
+                removeChatTyping();
+                appendChatMessage(response, 'bot');
+            } catch (error) {
+                removeChatTyping();
+                console.error('Chat error:', error);
+                appendChatMessage("Xin lỗi, khế ước đang bị gián đoạn... Thử lại sau nhé!", 'bot');
+            }
+        }
+
+        async function callLocalAI(message) {
+            await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
+            
+            const msg = message.toLowerCase();
+            
+            if (msg.includes('chào') || msg.includes('hello')) {
+                return "Hì hì~ Chào ông/bà! Tôi là trợ lý của S-BIDI. Ông/bà cần tôi giúp gì nè?";
+            } else if (msg.includes('viết') || msg.includes('truyện')) {
+                return "Ồ, ông/bà muốn viết truyện à? Tuyệt quá! Ở đây có cả một thư viện để ông/bà thỏa sức sáng tạo. Đăng bài ở mục Cộng đồng để nhận điểm ma lực nha~";
+            } else if (msg.includes('điểm')) {
+                return "Điểm ma lực á? Mỗi bài đăng được +10 điểm đó! Càng nhiều điểm, ông/bà càng lên hạng cao trong bảng xếp hạng. Cố lên nè!";
+            } else if (msg.includes('hanako')) {
+                return "Hanako-kun là cảm hứng cho S-BIDI đó! Cậu ấy là Hoa Tử thứ 7, cai quản nhà vệ sinh nữ. Bí ẩn và đáng yêu lắm~ Hì hì~";
+            } else if (msg.includes('cảm ơn')) {
+                return "Không có chi! Cứ tự nhiên khám phá S-BIDI nha. Có gì thắc mắc cứ hỏi tôi~";
+            } else {
+                const responses = [
+                    "Hừm... Tôi chưa hiểu lắm. Nhưng ông/bà có muốn tôi gợi ý vài ý tưởng viết truyện không?",
+                    "Ở S-BIDI có nhiều linh hồn vui tính lắm. Ông/bà thử vào mục Tìm bạn kết giao đi!",
+                    "Bí mật nè: Có một thế giới ẩn trong S-BIDI đó. Khám phá dần dần nha~",
+                    "Tôi thấy ông/bà có tiềm năng viết lách lắm đó! Sao không thử đăng bài ở Cộng đồng?"
+                ];
+                return responses[Math.floor(Math.random() * responses.length)];
+            }
+        }
+
+        async function callGeminiAPI(message) {
+            const response = await fetch(`${GAS}?action=chatWithGemini&message=${encodeURIComponent(message)}`);
+            const text = await response.text();
+            
+            if (text.startsWith('ERROR:')) {
+                throw new Error(text);
+            }
+            return text;
+        }
+
+        async function callOpenRouterAPI(message) {
+            const response = await fetch(`${GAS}?action=chatWithOpenRouter&message=${encodeURIComponent(message)}`);
+            const text = await response.text();
+            
+            if (text.startsWith('ERROR:')) {
+                throw new Error(text);
+            }
+            return text;
+        }
+
+        function appendChatMessage(text, role) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `chat-message ${role}`;
+            msgDiv.textContent = text;
+            const container = document.getElementById('chatMessages');
+            container.appendChild(msgDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showChatTyping() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.id = 'chatTyping';
+            typingDiv.innerHTML = '<span></span><span></span><span></span>';
+            document.getElementById('chatMessages').appendChild(typingDiv);
+        }
+
+        function removeChatTyping() {
+            document.getElementById('chatTyping')?.remove();
+        }
+
+        function resetDailyStats() {
+            const lastReset = localStorage.getItem('sb_last_reset');
+            const today = new Date().toDateString();
+            
+            if (lastReset !== today) {
+                userStats.postsToday = 0;
+                userStats.commentsToday = 0;
+                userStats.reactionsToday = 0;
+                localStorage.setItem("sb_stats", JSON.stringify(userStats));
+                localStorage.setItem('sb_last_reset', today);
+            }
+        }
+
+        // ==================== INIT ====================
+        window.onload = () => {
+            const m = localStorage.getItem("sb_mail");
+            if(m) {
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('home-screen').classList.remove('hidden');
+                
+                const savedAPI = localStorage.getItem('chatbot_api') || 'local';
+                API_CONFIG.current = savedAPI;
+                
+                resetDailyStats();
+                syncData();
+                loadHomePosts();
+                loadDailyQuests();
+            }
+            
+            const savedName = localStorage.getItem("sb_name");
+            if(savedName) {
+                document.getElementById('side-name').innerText = savedName;
+            }
+            
+            document.getElementById('bio-input').value = userBio;
+        };
+    </script>
+</body>
+</html>
