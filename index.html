@@ -1,526 +1,397 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { initializeApp } from 'firebase/app';
-import { 
-  getAuth, 
-  onAuthStateChanged, 
-  signOut,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-} from 'firebase/auth';
-import { 
-  getFirestore, 
-  collection, 
-  doc, 
-  setDoc, 
-  onSnapshot, 
-  serverTimestamp,
-  updateDoc,
-  addDoc,
-  query,
-  orderBy,
-  getDoc,
-  increment,
-  deleteDoc
-} from 'firebase/firestore';
-import { 
-  ShoppingBag, 
-  Settings, 
-  LogOut, 
-  Bot,
-  Star,
-  Send,
-  Sun,
-  Sparkles,
-  LayoutGrid,
-  Home,
-  Trophy,
-  Quote,
-  Briefcase,
-  Gamepad2,
-  BookMarked,
-  Type,
-  UserCircle,
-  Eye,
-  EyeOff,
-  CheckCircle2,
-  CalendarDays,
-  Flame
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bidi Community Platform</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Firebase SDKs (Compat Version for Browser context) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-// --- CONFIGURATION ---
-const firebaseConfig = {
-  apiKey: "AIzaSyCKginwZHlUoJUs3LM3vQBtGZ7oOIlZsyo",
-  authDomain: "fir-bidi1.firebaseapp.com",
-  projectId: "fir-bidi1",
-  storageBucket: "fir-bidi1.firebasestorage.app",
-  messagingSenderId: "596465212515",
-  appId: "1:596465212515:web:2400ae57364dfc839b2c56"
-};
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .font-black { font-weight: 900; }
+        .transition-all { transition: all 0.3s ease; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950">
+    <div id="root"></div>
 
-// Cập nhật API Keys mới từ người dùng
-const GEMINI_API_KEY = "AIzaSyDuFNBPK3MrJI7lsL0WuFlFejm3CtrNulQ";
-const OPENROUTER_API_KEY = "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";
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const appId = "fir-bidi1";
+        // --- CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCKginwZHlUoJUs3LM3vQBtGZ7oOIlZsyo",
+            authDomain: "fir-bidi1.firebaseapp.com",
+            projectId: "fir-bidi1",
+            storageBucket: "fir-bidi1.firebasestorage.app",
+            messagingSenderId: "596465212515",
+            appId: "1:596465212515:web:2400ae57364dfc839b2c56"
+        };
 
-const SHOP_ITEMS = [
-  { id: 'u1', name: 'Giải bài tập nhanh', price: 450, type: 'utility', icon: 'BookMarked' },
-  { id: 'u2', name: 'AI Gợi ý cốt truyện', price: 1000, type: 'utility', icon: 'Bot' },
-  { id: 'r1', name: '100 Robux Card', price: 2000, type: 'robux', icon: 'Gamepad2' },
-  { id: 'r2', name: '500 Robux Card', price: 8000, type: 'robux', icon: 'Gamepad2' },
-  { id: 'a1', name: 'Lửa xanh vĩnh cửu', price: 500, type: 'animation', icon: 'Sparkles' },
-  { id: 'a2', name: 'Hào quang rực rỡ', price: 1500, type: 'animation', icon: 'Sparkles' }
-];
+        const GEMINI_API_KEY = "AIzaSyDuFNBPK3MrJI7lsL0WuFlFejm3CtrNulQ";
+        const OPENROUTER_API_KEY = "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";
+        const appId = "fir-bidi1";
 
-const IconMap = {
-  BookMarked: <BookMarked />,
-  Bot: <Bot />,
-  Sparkles: <Sparkles />,
-  Gamepad2: <Gamepad2 />
-};
+        // Initialize Firebase using compat syntax for browser script tags
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-// --- AI SERVICE ---
-async function fetchAIResponse(prompt, mode = 'normal') {
-  let systemInstruction = "Bạn là một trợ lý hữu ích.";
-  if (mode === 'hanako') {
-    systemInstruction = "Bạn là Hanako-kun trong Toilet-bound Hanako-kun. Cách nói chuyện bí ẩn, tinh nghịch, hay trêu chọc nhưng cũng rất quan tâm. Thường gọi người đối diện là 'Yashiro' hoặc 'Cậu'.";
-  } else if (mode === 'trumpo') {
-    systemInstruction = "Bạn là Trumpo - một kẻ 'mỏ hỗn' chuyên nghiệp, hóm hỉnh, xéo xắt nhưng cực kỳ thông minh và thực tế. Bạn nói chuyện thẳng thắn, không ngại cà khịa nhưng vẫn giữ được sự đẳng cấp và kiến thức sâu rộng. Hãy dùng những từ ngữ sắc sảo, dóm dỉnh để trả lời.";
-  }
+        // --- COMPONENTS ---
+        const Icon = ({ name, size = 18, className = "" }) => {
+            useEffect(() => { 
+                if (window.lucide) {
+                    window.lucide.createIcons(); 
+                }
+            }, [name]);
+            return <i data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
+        };
 
-  const fullPrompt = `System: ${systemInstruction}\nUser: ${prompt}`;
+        const SHOP_ITEMS = [
+            { id: 'u1', name: 'Giải bài tập nhanh', price: 450, type: 'utility', icon: 'book-marked' },
+            { id: 'u2', name: 'AI Gợi ý cốt truyện', price: 1000, type: 'utility', icon: 'bot' },
+            { id: 'r1', name: '100 Robux Card', price: 2000, type: 'robux', icon: 'gamepad-2' },
+            { id: 'r2', name: '500 Robux Card', price: 8000, type: 'robux', icon: 'gamepad-2' },
+            { id: 'a1', name: 'Lửa xanh vĩnh cửu', price: 500, type: 'animation', icon: 'sparkles' },
+            { id: 'a2', name: 'Hào quang rực rỡ', price: 1500, type: 'animation', icon: 'sparkles' }
+        ];
 
-  try {
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${GEMINI_API_KEY}`;
-    const response = await fetch(geminiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: fullPrompt }] }] })
-    });
-    const data = await response.json();
-    if (data.candidates?.[0]?.content?.parts?.[0]?.text) return data.candidates[0].content.parts[0].text;
-    throw new Error("Quota Exceeded");
-  } catch (err) {
-    try {
-      const orResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: { 
-          "Authorization": `Bearer ${OPENROUTER_API_KEY}`, 
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.0-flash-lite-preview-02-05:free",
-          messages: [{ role: "user", content: fullPrompt }]
-        })
-      });
-      const orData = await orResponse.json();
-      return orData.choices[0].message.content;
-    } catch (orErr) {
-      return "Hệ thống AI đang nghỉ ngơi, quay lại sau nhé!";
-    }
-  }
-}
-
-// --- MAIN APP ---
-const App = () => {
-  const [user, setUser] = useState(null);
-  const [userData, setUserData] = useState(null);
-  const [inventory, setInventory] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('home');
-  const [isDarkMode, setIsDarkMode] = useState(localStorage.getItem('theme') === 'dark');
-  const [fontFamily, setFontFamily] = useState(localStorage.getItem('font') || 'font-sans');
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (isDarkMode) root.classList.add('dark'); else root.classList.remove('dark');
-    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-  }, [isDarkMode]);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      if (currentUser) {
-        onSnapshot(doc(db, 'artifacts', appId, 'users', currentUser.uid), (snap) => {
-          if (snap.exists()) setUserData(snap.data());
-        });
-        onSnapshot(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'inventory'), (snap) => {
-          setInventory(snap.docs.map(d => ({ invId: d.id, ...d.data() })));
-        });
-      }
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  if (loading) return <div className="h-screen flex items-center justify-center bg-slate-950 text-white font-black">BIDI...</div>;
-  if (!user) return <AuthScreen />;
-
-  return (
-    <div className={`flex h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-all ${fontFamily}`}>
-      <nav className="w-72 bg-white dark:bg-slate-900 border-r dark:border-slate-800 flex flex-col p-6 gap-2 shadow-xl z-20">
-        <div className="mb-10 p-2 flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg">B</div>
-          <span className="font-black tracking-tighter text-xl">BIDI</span>
-        </div>
-        
-        <NavItem icon={<Home size={18}/>} label="Trang chủ" active={activeTab === 'home'} onClick={() => setActiveTab('home')} />
-        <NavItem icon={<LayoutGrid size={18}/>} label="Cộng đồng" active={activeTab === 'posts'} onClick={() => setActiveTab('posts')} />
-        <NavItem icon={<CheckCircle2 size={18}/>} label="Nhiệm vụ" active={activeTab === 'tasks'} onClick={() => setActiveTab('tasks')} />
-        <NavItem icon={<ShoppingBag size={18}/>} label="Cửa hàng" active={activeTab === 'shop'} onClick={() => setActiveTab('shop')} />
-        <NavItem icon={<Briefcase size={18}/>} label="Kho đồ" active={activeTab === 'inventory'} onClick={() => setActiveTab('inventory')} />
-        <NavItem icon={<Bot size={18}/>} label="AI Chat" active={activeTab === 'ai'} onClick={() => setActiveTab('ai')} />
-        <NavItem icon={<Settings size={18}/>} label="Cài đặt" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
-
-        <div className="mt-auto p-4 bg-slate-50 dark:bg-slate-800 rounded-3xl">
-           <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-lg">{userData?.displayName?.[0] || 'U'}</div>
-              <div className="flex-1 min-w-0">
-                 <p className="text-[10px] font-black truncate uppercase tracking-tighter">{userData?.displayName || 'User'}</p>
-                 <p className="text-[10px] text-amber-500 font-bold">{userData?.points || 0} PTS</p>
-              </div>
-           </div>
-           <button onClick={() => signOut(auth)} className="w-full text-[9px] font-black uppercase text-red-500 tracking-widest flex items-center justify-center gap-2 py-2 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-colors"><LogOut size={12}/> Đăng xuất</button>
-        </div>
-      </nav>
-
-      <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-16 border-b dark:border-slate-800 flex items-center justify-between px-10 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md">
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-600">{activeTab}</span>
-        </header>
-
-        <div className="flex-1 overflow-y-auto p-10">
-            {activeTab === 'home' && <HomeView user={user} userData={userData} />}
-            {activeTab === 'posts' && <PostManager user={user} userData={userData} />}
-            {activeTab === 'tasks' && <TasksView user={user} userData={userData} />}
-            {activeTab === 'shop' && <ShopView points={userData?.points || 0} user={user} />}
-            {activeTab === 'inventory' && <InventoryView inventory={inventory} user={user} />}
-            {activeTab === 'ai' && <AIChatView />}
-            {activeTab === 'settings' && <SettingsView userData={userData} user={user} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} fontFamily={fontFamily} setFontFamily={setFontFamily} />}
-        </div>
-      </main>
-    </div>
-  );
-};
-
-const NavItem = ({ icon, label, active, onClick }) => (
-    <button onClick={onClick} className={`flex items-center gap-4 w-full p-4 rounded-2xl transition-all ${active ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
-      {icon} <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
-    </button>
-);
-
-// --- TASKS VIEW ---
-const TasksView = ({ user, userData }) => {
-    const handleCheckIn = async () => {
-        const now = new Date();
-        const todayStr = now.toISOString().split('T')[0];
-        const lastCheckIn = userData?.lastCheckIn || '';
-
-        if (lastCheckIn === todayStr) {
-            alert("Bạn đã điểm danh hôm nay rồi!");
-            return;
-        }
-
-        const isSunday = now.getDay() === 0;
-        const reward = isSunday ? 10 : 5;
-
-        try {
-            await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid), {
-                points: increment(reward),
-                lastCheckIn: todayStr
-            });
-            alert(`Điểm danh thành công! Bạn nhận được ${reward} PTS (${isSunday ? 'Thưởng Chủ Nhật' : 'Ngày thường'}).`);
-        } catch (e) {
-            console.error(e);
-        }
-    };
-
-    return (
-        <div className="space-y-8 animate-in fade-in duration-500">
-            <h2 className="text-3xl font-black">Nhiệm vụ hàng ngày</h2>
-            <div className="bg-white dark:bg-slate-900 p-10 rounded-[3rem] border dark:border-slate-800 shadow-sm flex items-center justify-between">
-                <div className="flex items-center gap-6">
-                    <div className="p-5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-3xl"><CalendarDays size={32}/></div>
-                    <div>
-                        <h3 className="text-xl font-black">Điểm danh mỗi ngày</h3>
-                        <p className="text-sm text-slate-500 font-medium">Nhận 5pts ngày thường, 10pts vào Chủ Nhật.</p>
-                    </div>
-                </div>
-                <button 
-                    onClick={handleCheckIn}
-                    disabled={userData?.lastCheckIn === new Date().toISOString().split('T')[0]}
-                    className={`px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${userData?.lastCheckIn === new Date().toISOString().split('T')[0] ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-500/20'}`}
-                >
-                    {userData?.lastCheckIn === new Date().toISOString().split('T')[0] ? 'Đã điểm danh' : 'Điểm danh ngay'}
-                </button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border dark:border-slate-800 flex items-center gap-4 opacity-50">
-                    <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl"><Flame size={20}/></div>
-                    <div>
-                        <p className="font-black text-xs uppercase">Chuỗi điểm danh</p>
-                        <p className="text-sm font-bold text-slate-400">Sắp ra mắt...</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-// --- AUTH SCREEN ---
-const AuthScreen = () => {
-    const [mode, setMode] = useState('login');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const [displayName, setDisplayName] = useState('');
-    const [error, setError] = useState('');
-
-    const handleAuth = async (e) => {
-        e.preventDefault(); setError('');
-        try {
-            if (mode === 'login') {
-                await signInWithEmailAndPassword(auth, email, password);
-            } else {
-                const res = await createUserWithEmailAndPassword(auth, email, password);
-                await setDoc(doc(db, 'artifacts', appId, 'users', res.user.uid), { 
-                    email, displayName: displayName || email.split('@')[0], points: 500, createdAt: serverTimestamp()
-                });
+        // --- AI SERVICE ---
+        async function fetchAIResponse(prompt, mode = 'normal') {
+            let systemInstruction = "Bạn là một trợ lý hữu ích.";
+            if (mode === 'hanako') {
+                systemInstruction = "Bạn là Hanako-kun. Bí ẩn, tinh nghịch, hay trêu chọc Yashiro.";
+            } else if (mode === 'trumpo') {
+                systemInstruction = "Bạn là Trumpo - mỏ hỗn, hóm hỉnh, xéo xắt nhưng thông minh.";
             }
-        } catch (err) { setError("Lỗi đăng nhập. Vui lòng kiểm tra lại."); }
-    };
+            const fullPrompt = `System: ${systemInstruction}\nUser: ${prompt}`;
 
-    return (
-        <div className="h-screen flex items-center justify-center bg-slate-950 p-6">
-            <div className="w-full max-w-md bg-white p-12 rounded-[4rem] shadow-2xl">
-                <div className="w-16 h-16 bg-blue-600 rounded-3xl mx-auto mb-8 flex items-center justify-center text-white text-3xl font-black">B</div>
-                <h2 className="text-4xl font-black text-center mb-10 text-slate-900 tracking-tighter uppercase">{mode === 'login' ? 'Đăng nhập' : 'Đăng ký'}</h2>
-                {error && <div className="bg-red-50 text-red-500 p-4 rounded-2xl mb-6 text-[10px] font-black uppercase text-center">{error}</div>}
-                <form onSubmit={handleAuth} className="space-y-4">
-                    {mode === 'signup' && <input placeholder="Tên của bạn" className="w-full bg-slate-50 rounded-2xl p-5 text-sm font-bold outline-none ring-1 ring-slate-100 focus:ring-blue-500" value={displayName} onChange={e => setDisplayName(e.target.value)} />}
-                    <input placeholder="Email" className="w-full bg-slate-50 rounded-2xl p-5 text-sm font-bold outline-none ring-1 ring-slate-100 focus:ring-blue-500" value={email} onChange={e => setEmail(e.target.value)} />
-                    <div className="relative">
-                        <input 
-                            type={showPassword ? "text" : "password"} 
-                            placeholder="Mật khẩu" 
-                            className="w-full bg-slate-50 rounded-2xl p-5 text-sm font-bold outline-none ring-1 ring-slate-100 focus:ring-blue-500" 
-                            value={password} onChange={e => setPassword(e.target.value)} 
-                        />
-                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-5 top-5 text-slate-400">
-                            {showPassword ? <EyeOff size={20}/> : <Eye size={20}/>}
-                        </button>
-                    </div>
-                    <button className="w-full bg-blue-600 text-white font-black py-5 rounded-2xl uppercase text-[10px] tracking-[0.3em] shadow-xl hover:bg-blue-700 mt-4">Xác nhận</button>
-                </form>
-                <button onClick={() => setMode(mode === 'login' ? 'signup' : 'login')} className="w-full mt-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">{mode === 'login' ? 'Chưa có tài khoản? Đăng ký' : 'Đã có tài khoản? Đăng nhập'}</button>
-            </div>
-        </div>
-    );
-};
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: fullPrompt }] }] })
+                });
+                const data = await res.json();
+                return data.candidates?.[0]?.content?.parts?.[0]?.text || "Lỗi quota!";
+            } catch (err) {
+                const orRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${OPENROUTER_API_KEY}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        model: "google/gemini-2.0-flash-lite-preview-02-05:free",
+                        messages: [{ role: "user", content: fullPrompt }]
+                    })
+                });
+                const orData = await orRes.json();
+                return orData.choices[0].message.content;
+            }
+        }
 
-// --- AI CHAT VIEW ---
-const AIChatView = () => {
-    const [messages, setMessages] = useState([{ role: 'bot', text: 'Chào mừng bạn đến với Bidi AI. Hãy chọn phong cách nói chuyện phía trên!' }]);
-    const [input, setInput] = useState('');
-    const [isTyping, setIsTyping] = useState(false);
-    const [aiMode, setAiMode] = useState('normal');
-    const scrollRef = useRef(null);
+        const App = () => {
+            const [user, setUser] = useState(null);
+            const [userData, setUserData] = useState(null);
+            const [inventory, setInventory] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [activeTab, setActiveTab] = useState('home');
+            const [isDarkMode, setIsDarkMode] = useState(localStorage.getItem('theme') === 'dark');
 
-    useEffect(() => {
-        if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }, [messages]);
+            useEffect(() => {
+                const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+                    setUser(currentUser);
+                    if (currentUser) {
+                        const userDocRef = db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid);
+                        
+                        // User Data Listener
+                        const unsubUser = userDocRef.onSnapshot((snap) => {
+                            if (snap.exists) setUserData(snap.data());
+                        });
 
-    const handleChat = async () => {
-        if (!input.trim() || isTyping) return;
-        const userMsg = input; setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
-        setInput(''); setIsTyping(true);
-        const aiResponse = await fetchAIResponse(userMsg, aiMode);
-        setMessages(prev => [...prev, { role: 'bot', text: aiResponse }]);
-        setIsTyping(false);
-    };
+                        // Inventory Listener
+                        const unsubInv = userDocRef.collection('inventory').onSnapshot((snap) => {
+                            setInventory(snap.docs.map(d => ({ invId: d.id, ...d.data() })));
+                        });
 
-    return (
-        <div className="h-[calc(100vh-200px)] flex flex-col bg-white dark:bg-slate-900 rounded-[3rem] border dark:border-slate-800 overflow-hidden shadow-xl">
-            <div className="p-4 bg-slate-50 dark:bg-slate-800 border-b dark:border-slate-700 flex gap-2 justify-center">
-                {[
-                    { id: 'normal', name: 'Mặc định', icon: <Bot size={14}/> },
-                    { id: 'hanako', name: 'Hanako-kun', icon: <Sparkles size={14}/> },
-                    { id: 'trumpo', name: 'Trumpo Mỏ Hỗn', icon: <Flame size={14}/> }
-                ].map(m => (
-                    <button key={m.id} onClick={() => setAiMode(m.id)} className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center gap-2 transition-all ${aiMode === m.id ? 'bg-blue-600 text-white shadow-md' : 'bg-white dark:bg-slate-900 text-slate-400 border dark:border-slate-800'}`}>
-                        {m.icon} {m.name}
-                    </button>
-                ))}
-            </div>
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-10 space-y-6">
-                {messages.map((m, i) => (
-                    <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`p-5 rounded-3xl text-sm max-w-[85%] font-medium leading-relaxed shadow-sm ${m.role === 'user' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200'}`}>{m.text}</div>
-                    </div>
-                ))}
-                {isTyping && <div className="text-[10px] font-black uppercase text-blue-500 animate-pulse px-4">AI đang soạn bài...</div>}
-            </div>
-            <div className="p-8 bg-slate-50 dark:bg-slate-800/50 flex gap-4 border-t dark:border-slate-800">
-                <input value={input} onChange={e => setInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleChat()} placeholder="Nhắn gì đó hóm hỉnh đi..." className="flex-1 bg-white dark:bg-slate-900 border-none rounded-2xl px-6 outline-none font-bold" />
-                <button onClick={handleChat} className="p-5 bg-blue-600 text-white rounded-2xl shadow-xl hover:scale-105 transition-all"><Send size={20}/></button>
-            </div>
-        </div>
-    );
-};
+                        return () => { unsubUser(); unsubInv(); };
+                    }
+                    setLoading(false);
+                });
+                return () => unsubscribe();
+            }, []);
 
-const HomeView = ({ userData }) => (
-    <div className="space-y-8 animate-in fade-in duration-500">
-        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-16 rounded-[4rem] text-white shadow-2xl relative overflow-hidden">
-            <h2 className="text-5xl font-black mb-4">Xin chào, {userData?.displayName || 'Thành viên'}!</h2>
-            <p className="opacity-80 font-bold text-lg">Chào mừng bạn quay trở lại Bidi Community.</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white dark:bg-slate-900 p-10 rounded-[3rem] border dark:border-slate-800 shadow-sm">
-                <h4 className="text-[10px] font-black uppercase text-slate-400 mb-6 flex items-center gap-2"><Trophy size={14}/> Thành tích</h4>
-                <div className="flex items-center gap-4 p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl">
-                    <div className="p-3 bg-amber-500/10 text-amber-500 rounded-xl"><Star fill="currentColor"/></div>
-                    <div>
-                        <p className="text-xs font-black uppercase">Điểm tích lũy</p>
-                        <p className="text-2xl font-black">{userData?.points || 0}</p>
-                    </div>
-                </div>
-            </div>
-            <div className="bg-white dark:bg-slate-900 p-10 rounded-[3rem] border dark:border-slate-800 shadow-sm">
-                <h4 className="text-[10px] font-black uppercase text-slate-400 mb-6 flex items-center gap-2"><Quote size={14}/> Cảm hứng</h4>
-                <p className="text-xl font-bold italic leading-relaxed">"Sáng tạo là chìa khóa mở ra tương lai."</p>
-            </div>
-        </div>
-    </div>
-);
+            useEffect(() => {
+                if (isDarkMode) document.documentElement.classList.add('dark');
+                else document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+            }, [isDarkMode]);
 
-const PostManager = ({ user, userData }) => {
-    const [posts, setPosts] = useState([]);
-    const [showForm, setShowForm] = useState(false);
-    const [title, setTitle] = useState('');
-    const [content, setContent] = useState('');
+            if (loading) return <div className="h-screen flex items-center justify-center bg-slate-950 text-white font-black uppercase tracking-widest">Bidi Loading...</div>;
+            if (!user) return <AuthScreen />;
 
-    useEffect(() => {
-        const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'posts'), orderBy('createdAt', 'desc'));
-        return onSnapshot(q, (snap) => setPosts(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
-    }, []);
-
-    const handlePost = async () => {
-        if (!title.trim() || !content.trim()) return;
-        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'posts'), {
-            title, content, author: userData?.displayName || user.email, authorId: user.uid, createdAt: serverTimestamp()
-        });
-        setTitle(''); setContent(''); setShowForm(false);
-    };
-
-    return (
-        <div className="space-y-8 pb-10">
-            <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border dark:border-slate-800 shadow-sm">
-                <h2 className="text-2xl font-black">Cộng đồng</h2>
-                <button onClick={() => setShowForm(!showForm)} className="bg-blue-600 text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase shadow-lg hover:bg-blue-700">{showForm ? 'Đóng' : 'Đăng bài mới'}</button>
-            </div>
-            {showForm && (
-                <div className="bg-white dark:bg-slate-900 p-10 rounded-[3rem] border-2 border-blue-600 space-y-4">
-                    <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Tiêu đề..." className="w-full bg-slate-50 dark:bg-slate-800 p-5 rounded-2xl font-black outline-none" />
-                    <textarea value={content} onChange={e => setContent(e.target.value)} placeholder="Nội dung..." rows="4" className="w-full bg-slate-50 dark:bg-slate-800 p-5 rounded-2xl font-bold outline-none" />
-                    <button onClick={handlePost} className="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase text-[10px]">Đăng bài ngay</button>
-                </div>
-            )}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {posts.map(post => (
-                    <div key={post.id} className="bg-white dark:bg-slate-900 p-10 rounded-[3rem] border dark:border-slate-800 shadow-sm">
-                        <h3 className="text-2xl font-black mb-4">{post.title}</h3>
-                        <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium line-clamp-3">{post.content}</p>
-                        <div className="flex items-center gap-3 border-t dark:border-slate-800 pt-8">
-                            <div className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-[10px] font-black">{post.author?.[0]}</div>
-                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">{post.author}</span>
+            return (
+                <div className="flex h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-all font-sans">
+                    {/* Sidebar */}
+                    <nav className="w-72 bg-white dark:bg-slate-900 border-r dark:border-slate-800 flex flex-col p-6 gap-2 shadow-xl z-20">
+                        <div className="mb-10 p-2 flex items-center gap-3">
+                            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg">B</div>
+                            <span className="font-black tracking-tighter text-xl uppercase">BIDI</span>
                         </div>
+                        
+                        <NavItem icon="home" label="Trang chủ" active={activeTab === 'home'} onClick={() => setActiveTab('home')} />
+                        <NavItem icon="layout-grid" label="Cộng đồng" active={activeTab === 'posts'} onClick={() => setActiveTab('posts')} />
+                        <NavItem icon="check-circle-2" label="Nhiệm vụ" active={activeTab === 'tasks'} onClick={() => setActiveTab('tasks')} />
+                        <NavItem icon="shopping-bag" label="Cửa hàng" active={activeTab === 'shop'} onClick={() => setActiveTab('shop')} />
+                        <NavItem icon="briefcase" label="Kho đồ" active={activeTab === 'inventory'} onClick={() => setActiveTab('inventory')} />
+                        <NavItem icon="bot" label="AI Chat" active={activeTab === 'ai'} onClick={() => setActiveTab('ai')} />
+                        <NavItem icon="settings" label="Cài đặt" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
+
+                        <div className="mt-auto p-4 bg-slate-50 dark:bg-slate-800 rounded-3xl">
+                           <div className="flex items-center gap-3 mb-4">
+                              <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-lg">{userData?.displayName?.[0] || 'U'}</div>
+                              <div className="flex-1 min-w-0">
+                                 <p className="text-[10px] font-black truncate uppercase tracking-tighter">{userData?.displayName || 'User'}</p>
+                                 <p className="text-[10px] text-amber-500 font-bold">{userData?.points || 0} PTS</p>
+                              </div>
+                           </div>
+                           <button onClick={() => auth.signOut()} className="w-full text-[9px] font-black uppercase text-red-500 tracking-widest flex items-center justify-center gap-2 py-2 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-colors"><Icon name="log-out" size={12}/> Đăng xuất</button>
+                        </div>
+                    </nav>
+
+                    <main className="flex-1 flex flex-col overflow-hidden">
+                        <header className="h-16 border-b dark:border-slate-800 flex items-center justify-between px-10 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md">
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-600">{activeTab}</span>
+                        </header>
+                        <div className="flex-1 overflow-y-auto p-10">
+                            {activeTab === 'home' && <HomeView userData={userData} />}
+                            {activeTab === 'tasks' && <TasksView user={user} userData={userData} />}
+                            {activeTab === 'ai' && <AIChatView />}
+                            {activeTab === 'shop' && <ShopView points={userData?.points || 0} user={user} />}
+                            {activeTab === 'inventory' && <InventoryView inventory={inventory} user={user} />}
+                            {activeTab === 'settings' && <SettingsView userData={userData} user={user} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />}
+                            {activeTab === 'posts' && <PostManager user={user} userData={userData} />}
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+        const NavItem = ({ icon, label, active, onClick }) => (
+            <button onClick={onClick} className={`flex items-center gap-4 w-full p-4 rounded-2xl transition-all ${active ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
+                <Icon name={icon} />
+                <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
+            </button>
+        );
+
+        const AuthScreen = () => {
+            const [mode, setMode] = useState('login');
+            const [email, setEmail] = useState('');
+            const [password, setPassword] = useState('');
+            const [displayName, setDisplayName] = useState('');
+            const [error, setError] = useState('');
+
+            const handleAuth = async (e) => {
+                e.preventDefault();
+                try {
+                    if (mode === 'login') {
+                        await auth.signInWithEmailAndPassword(email, password);
+                    } else {
+                        const res = await auth.createUserWithEmailAndPassword(email, password);
+                        await db.collection('artifacts').doc(appId).collection('users').doc(res.user.uid).set({ 
+                            email, 
+                            displayName: displayName || email.split('@')[0], 
+                            points: 500, 
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                } catch (err) { 
+                    console.error(err);
+                    setError("Vui lòng kiểm tra lại tài khoản/mật khẩu."); 
+                }
+            };
+
+            return (
+                <div className="h-screen flex items-center justify-center bg-slate-950 p-6">
+                    <div className="w-full max-w-md bg-white p-12 rounded-[4rem] shadow-2xl">
+                        <div className="w-16 h-16 bg-blue-600 rounded-3xl mx-auto mb-8 flex items-center justify-center text-white text-3xl font-black">B</div>
+                        <h2 className="text-4xl font-black text-center mb-10 text-slate-900 tracking-tighter uppercase">{mode === 'login' ? 'Đăng nhập' : 'Đăng ký'}</h2>
+                        {error && <div className="bg-red-50 text-red-500 p-4 rounded-2xl mb-6 text-[10px] font-black uppercase text-center">{error}</div>}
+                        <form onSubmit={handleAuth} className="space-y-4">
+                            {mode === 'signup' && <input placeholder="Tên của bạn" className="w-full bg-slate-50 rounded-2xl p-5 text-sm font-bold outline-none border" value={displayName} onChange={e => setDisplayName(e.target.value)} />}
+                            <input placeholder="Email" className="w-full bg-slate-50 rounded-2xl p-5 text-sm font-bold outline-none border" value={email} onChange={e => setEmail(e.target.value)} />
+                            <input type="password" placeholder="Mật khẩu" className="w-full bg-slate-50 rounded-2xl p-5 text-sm font-bold outline-none border" value={password} onChange={e => setPassword(e.target.value)} />
+                            <button className="w-full bg-blue-600 text-white font-black py-5 rounded-2xl uppercase text-[10px] tracking-widest shadow-xl mt-4">Xác nhận</button>
+                        </form>
+                        <button onClick={() => setMode(mode === 'login' ? 'signup' : 'login')} className="w-full mt-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">{mode === 'login' ? 'Chưa có tài khoản? Đăng ký' : 'Đã có tài khoản? Đăng nhập'}</button>
                     </div>
-                ))}
+                </div>
+            );
+        };
+
+        const HomeView = ({ userData }) => (
+            <div className="space-y-8 animate-in fade-in duration-500">
+                <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-16 rounded-[4rem] text-white shadow-2xl">
+                    <h2 className="text-5xl font-black mb-4 tracking-tighter uppercase">Chào, {userData?.displayName || 'Bidi-er'}!</h2>
+                    <p className="opacity-80 font-bold text-lg">Hệ thống Community đã sẵn sàng.</p>
+                </div>
             </div>
-        </div>
-    );
-};
+        );
 
-const ShopView = ({ points, user }) => {
-    const buyItem = async (item) => {
-        if (points < item.price) { alert("Không đủ PTS!"); return; }
-        try {
-            await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid), { points: increment(-item.price) });
-            await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'inventory'), { ...item, purchasedAt: serverTimestamp() });
-            alert(`Đã mua ${item.name}!`);
-        } catch (e) { console.error(e); }
-    };
+        const TasksView = ({ user, userData }) => {
+            const handleCheckIn = async () => {
+                const today = new Date().toISOString().split('T')[0];
+                if (userData?.lastCheckIn === today) return alert("Hôm nay điểm danh rồi!");
+                const reward = new Date().getDay() === 0 ? 10 : 5;
+                
+                await db.collection('artifacts').doc(appId).collection('users').doc(user.uid).update({ 
+                    points: firebase.firestore.FieldValue.increment(reward), 
+                    lastCheckIn: today 
+                });
+                alert(`Nhận ${reward} PTS!`);
+            };
+            return (
+                <div className="bg-white dark:bg-slate-900 p-10 rounded-[3rem] border dark:border-slate-800 flex justify-between items-center">
+                    <div>
+                        <h3 className="text-2xl font-black">Điểm danh hằng ngày</h3>
+                        <p className="text-slate-500 font-medium">Làm giàu không khó với BIDI.</p>
+                    </div>
+                    <button onClick={handleCheckIn} className="px-10 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest">Điểm danh</button>
+                </div>
+            );
+        };
 
-    return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {SHOP_ITEMS.map(item => (
-                <div key={item.id} className="bg-white dark:bg-slate-900 p-10 rounded-[3rem] border dark:border-slate-800 flex flex-col items-center text-center shadow-sm">
-                    <div className="w-20 h-20 bg-blue-50 dark:bg-slate-800 rounded-[2rem] flex items-center justify-center text-blue-600 mb-8">{IconMap[item.icon]}</div>
-                    <h3 className="font-black mb-2 text-xl">{item.name}</h3>
-                    <div className="flex items-center gap-1 text-amber-500 font-black mb-8 text-lg"><Star size={18} fill="currentColor"/> {item.price}</div>
-                    <button onClick={() => buyItem(item)} className="w-full py-4 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg">Mua ngay</button>
-                </div>
-            ))}
-        </div>
-    );
-};
+        const AIChatView = () => {
+            const [messages, setMessages] = useState([{ role: 'bot', text: 'Tôi là Bidi AI, bạn muốn trò chuyện cùng ai?' }]);
+            const [input, setInput] = useState('');
+            const [aiMode, setAiMode] = useState('normal');
 
-const InventoryView = ({ inventory, user }) => {
-    const useItem = async (item) => {
-        if (item.type === 'animation') return;
-        if (!window.confirm(`Sử dụng ${item.name}?`)) return;
-        try {
-            await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'inventory', item.invId));
-            alert("Đã sử dụng vật phẩm.");
-        } catch (e) { console.error(e); }
-    };
-    return (
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {inventory.map((item, idx) => (
-                <div key={idx} className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border dark:border-slate-800 flex flex-col items-center shadow-sm">
-                    <div className="w-14 h-14 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-6 text-blue-500">{IconMap[item.icon]}</div>
-                    <h4 className="font-black text-sm mb-6 text-center">{item.name}</h4>
-                    <button onClick={() => useItem(item)} className={`w-full py-3 rounded-xl text-[9px] font-black uppercase tracking-widest ${item.type === 'animation' ? 'bg-slate-100 text-slate-400' : 'bg-green-600 text-white'}`}>{item.type === 'animation' ? 'Vĩnh viễn' : 'Sử dụng'}</button>
-                </div>
-            ))}
-        </div>
-    );
-};
+            const handleSend = async () => {
+                if (!input.trim()) return;
+                const txt = input; setInput('');
+                setMessages(prev => [...prev, { role: 'user', text: txt }]);
+                const res = await fetchAIResponse(txt, aiMode);
+                setMessages(prev => [...prev, { role: 'bot', text: res }]);
+            };
 
-const SettingsView = ({ userData, user, isDarkMode, setIsDarkMode, fontFamily, setFontFamily }) => {
-    const [newName, setNewName] = useState(userData?.displayName || '');
-    const updateName = async () => {
-        await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid), { displayName: newName });
-        alert("Đã cập nhật!");
-    };
-    return (
-        <div className="max-w-4xl space-y-10">
-            <section className="bg-white dark:bg-slate-900 p-10 rounded-[3rem] border dark:border-slate-800 space-y-8">
-                <h4 className="text-[10px] font-black uppercase text-blue-600 flex items-center gap-2"><UserCircle size={16}/> Hồ sơ</h4>
-                <div className="flex gap-4">
-                    <input value={newName} onChange={e => setNewName(e.target.value)} className="flex-1 bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl font-bold outline-none" />
-                    <button onClick={updateName} className="px-8 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase shadow-lg">Lưu</button>
+            return (
+                <div className="h-[500px] flex flex-col bg-white dark:bg-slate-900 rounded-[3rem] border dark:border-slate-800 overflow-hidden">
+                    <div className="p-4 bg-slate-50 dark:bg-slate-800 flex gap-2 justify-center">
+                        {['normal', 'hanako', 'trumpo'].map(m => (
+                            <button key={m} onClick={() => setAiMode(m)} className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase ${aiMode === m ? 'bg-blue-600 text-white' : 'bg-white dark:bg-slate-900'}`}>{m}</button>
+                        ))}
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-10 space-y-4">
+                        {messages.map((m, i) => (
+                            <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                <div className={`p-4 rounded-2xl max-w-[80%] text-sm font-bold ${m.role === 'user' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800'}`}>{m.text}</div>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="p-6 flex gap-4 border-t dark:border-slate-800">
+                        <input value={input} onChange={e => setInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleSend()} className="flex-1 bg-slate-50 dark:bg-slate-800 rounded-xl px-4 outline-none" placeholder="Chat..." />
+                        <button onClick={handleSend} className="p-4 bg-blue-600 text-white rounded-xl"><Icon name="send"/></button>
+                    </div>
                 </div>
-            </section>
-            <section className="bg-white dark:bg-slate-900 p-10 rounded-[3rem] border dark:border-slate-800 space-y-8">
-                <h4 className="text-[10px] font-black uppercase text-blue-600 flex items-center gap-2"><Sun size={16}/> Giao diện</h4>
-                <div className="flex items-center justify-between p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl">
-                    <span className="font-black text-sm uppercase">Dark Mode</span>
-                    <button onClick={() => setIsDarkMode(!isDarkMode)} className={`w-14 h-8 rounded-full relative ${isDarkMode ? 'bg-blue-600' : 'bg-slate-300'}`}>
-                        <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all ${isDarkMode ? 'left-7' : 'left-1'}`}></div>
-                    </button>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                    {['font-sans', 'font-serif', 'font-mono'].map(f => (
-                        <button key={f} onClick={() => setFontFamily(f)} className={`p-4 rounded-2xl border-2 text-[10px] font-black uppercase ${fontFamily === f ? 'border-blue-600 text-blue-600' : 'border-slate-100'}`}>{f.replace('font-', '')}</button>
+            );
+        };
+
+        const ShopView = ({ points, user }) => {
+            const buy = async (item) => {
+                if (points < item.price) return alert("Nghèo quá không đủ PTS!");
+                const userDocRef = db.collection('artifacts').doc(appId).collection('users').doc(user.uid);
+                
+                await userDocRef.update({ points: firebase.firestore.FieldValue.increment(-item.price) });
+                await userDocRef.collection('inventory').add({ ...item, boughtAt: firebase.firestore.FieldValue.serverTimestamp() });
+                alert("Đã mua thành công!");
+            };
+            return (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {SHOP_ITEMS.map(i => (
+                        <div key={i.id} className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border dark:border-slate-800 text-center">
+                            <Icon name={i.icon} size={32} className="mx-auto mb-4 text-blue-600" />
+                            <h4 className="font-black text-lg mb-2">{i.name}</h4>
+                            <p className="text-amber-500 font-black mb-6">{i.price} PTS</p>
+                            <button onClick={() => buy(i)} className="w-full py-3 bg-blue-600 text-white rounded-xl font-black text-[9px] uppercase">Mua</button>
+                        </div>
                     ))}
                 </div>
-            </section>
-        </div>
-    );
-};
+            );
+        };
 
-export default App;
+        const InventoryView = ({ inventory }) => (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {inventory.map((i, idx) => (
+                    <div key={idx} className="bg-white dark:bg-slate-900 p-6 rounded-3xl border dark:border-slate-800 text-center">
+                        <Icon name={i.icon} className="mx-auto mb-2" />
+                        <p className="text-[10px] font-black uppercase">{i.name}</p>
+                    </div>
+                ))}
+            </div>
+        );
+
+        const SettingsView = ({ isDarkMode, setIsDarkMode }) => (
+            <div className="bg-white dark:bg-slate-900 p-10 rounded-[3rem] border dark:border-slate-800">
+                <button onClick={() => setIsDarkMode(!isDarkMode)} className="flex items-center gap-4 font-black uppercase text-[10px]">
+                    {isDarkMode ? "Chế độ Sáng" : "Chế độ Tối"} <Icon name={isDarkMode ? 'sun' : 'moon'} />
+                </button>
+            </div>
+        );
+
+        const PostManager = ({ user, userData }) => {
+            const [posts, setPosts] = useState([]);
+            const [title, setTitle] = useState('');
+            const [content, setContent] = useState('');
+
+            useEffect(() => {
+                const unsub = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('posts')
+                    .orderBy('createdAt', 'desc')
+                    .onSnapshot((snap) => setPosts(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+                return () => unsub();
+            }, []);
+
+            const submitPost = async () => {
+                if (!title.trim()) return;
+                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('posts').add({
+                    title, 
+                    content, 
+                    author: userData?.displayName || user.email, 
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                setTitle(''); setContent('');
+            };
+
+            return (
+                <div className="space-y-6">
+                    <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl space-y-4 border">
+                        <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Tiêu đề..." className="w-full bg-slate-50 dark:bg-slate-800 p-4 rounded-xl font-black" />
+                        <textarea value={content} onChange={e => setContent(e.target.value)} placeholder="Nội dung..." className="w-full bg-slate-50 dark:bg-slate-800 p-4 rounded-xl font-bold" />
+                        <button onClick={submitPost} className="w-full bg-blue-600 text-white py-4 rounded-xl font-black uppercase text-[10px]">Đăng bài</button>
+                    </div>
+                    {posts.map(p => (
+                        <div key={p.id} className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border">
+                            <h4 className="text-xl font-black">{p.title}</h4>
+                            <p className="text-slate-500 mt-2">{p.content}</p>
+                            <p className="text-[9px] font-black uppercase text-blue-500 mt-4">By: {p.author}</p>
+                        </div>
+                    ))}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
