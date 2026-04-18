@@ -23,6 +23,8 @@
         body { font-family: 'Inter', sans-serif; }
         .font-black { font-weight: 900; }
         .transition-all { transition: all 0.3s ease; }
+        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); }
+        .dark .glass { background: rgba(15, 23, 42, 0.7); }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950">
@@ -45,37 +47,44 @@
         const OPENROUTER_API_KEY = "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";
         const appId = "fir-bidi1";
 
-        // Initialize Firebase using compat syntax for browser script tags
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        // --- CONSTANTS ---
+        const SHOP_CATEGORIES = [
+            { id: 'utility', label: 'Tiện ích AI', icon: 'wrench' },
+            { id: 'robux', label: 'Thẻ Robux', icon: 'gamepad-2' },
+            { id: 'animation', label: 'Hiệu ứng', icon: 'sparkles' }
+        ];
+
+        const SHOP_ITEMS = [
+            { id: 'u1', name: 'Giải bài tập nhanh', price: 450, type: 'utility', icon: 'book-marked', desc: 'Sử dụng AI giải toán lý hóa trong 3s' },
+            { id: 'u2', name: 'AI Gợi ý cốt truyện', price: 1000, type: 'utility', icon: 'bot', desc: 'Tạo ý tưởng cho truyện ngắn của bạn' },
+            { id: 'r1', name: '100 Robux Card', price: 2000, type: 'robux', icon: 'ticket', desc: 'Nạp ngay 100 Robux vào tài khoản' },
+            { id: 'r2', name: '500 Robux Card', price: 8000, type: 'robux', icon: 'ticket', desc: 'Gói Robux tiết kiệm nhất' },
+            { id: 'a1', name: 'Lửa xanh vĩnh cửu', price: 500, type: 'animation', icon: 'flame', desc: 'Hào quang màu xanh quanh avatar' },
+            { id: 'a2', name: 'Hào quang rực rỡ', price: 1500, type: 'animation', icon: 'sun', desc: 'Hiệu ứng lấp lánh khi đăng bài' }
+        ];
+
+        const DAILY_TASKS = [
+            { id: 'checkin', name: 'Điểm danh hằng ngày', reward: 50, icon: 'calendar-check' },
+            { id: 'post_story', name: 'Chia sẻ 1 câu truyện', reward: 100, icon: 'book-open' },
+            { id: 'solve_hw', name: 'Giúp đỡ bài tập', reward: 150, icon: 'graduation-cap' }
+        ];
+
         // --- COMPONENTS ---
         const Icon = ({ name, size = 18, className = "" }) => {
-            useEffect(() => { 
-                if (window.lucide) {
-                    window.lucide.createIcons(); 
-                }
-            }, [name]);
+            useEffect(() => { if (window.lucide) window.lucide.createIcons(); }, [name]);
             return <i data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
         };
 
-        const SHOP_ITEMS = [
-            { id: 'u1', name: 'Giải bài tập nhanh', price: 450, type: 'utility', icon: 'book-marked' },
-            { id: 'u2', name: 'AI Gợi ý cốt truyện', price: 1000, type: 'utility', icon: 'bot' },
-            { id: 'r1', name: '100 Robux Card', price: 2000, type: 'robux', icon: 'gamepad-2' },
-            { id: 'r2', name: '500 Robux Card', price: 8000, type: 'robux', icon: 'gamepad-2' },
-            { id: 'a1', name: 'Lửa xanh vĩnh cửu', price: 500, type: 'animation', icon: 'sparkles' },
-            { id: 'a2', name: 'Hào quang rực rỡ', price: 1500, type: 'animation', icon: 'sparkles' }
-        ];
-
-        // --- AI SERVICE ---
         async function fetchAIResponse(prompt, mode = 'normal') {
             let systemInstruction = "Bạn là một trợ lý hữu ích.";
             if (mode === 'hanako') {
-                systemInstruction = "Bạn là Hanako-kun. Bí ẩn, tinh nghịch, hay trêu chọc Yashiro.";
+                systemInstruction = "Bạn là Hanako-kun. Bí ẩn, tinh nghịch, hay trêu chọc Yashiro. Nói chuyện ngắn gọn, bí ẩn.";
             } else if (mode === 'trumpo') {
-                systemInstruction = "Bạn là Trumpo - mỏ hỗn, hóm hỉnh, xéo xắt nhưng thông minh.";
+                systemInstruction = "Bạn là Trumpo - mỏ hỗn, hóm hỉnh, xéo xắt nhưng thông minh. Luôn trả lời đầy cá tính.";
             }
             const fullPrompt = `System: ${systemInstruction}\nUser: ${prompt}`;
 
@@ -86,7 +95,7 @@
                     body: JSON.stringify({ contents: [{ parts: [{ text: fullPrompt }] }] })
                 });
                 const data = await res.json();
-                return data.candidates?.[0]?.content?.parts?.[0]?.text || "Lỗi quota!";
+                return data.candidates?.[0]?.content?.parts?.[0]?.text || "Mất kết nối với cõi âm...";
             } catch (err) {
                 const orRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
@@ -114,18 +123,10 @@
                     setUser(currentUser);
                     if (currentUser) {
                         const userDocRef = db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid);
-                        
-                        // User Data Listener
-                        const unsubUser = userDocRef.onSnapshot((snap) => {
-                            if (snap.exists) setUserData(snap.data());
-                        });
-
-                        // Inventory Listener
-                        const unsubInv = userDocRef.collection('inventory').onSnapshot((snap) => {
+                        userDocRef.onSnapshot((snap) => { if (snap.exists) setUserData(snap.data()); });
+                        userDocRef.collection('inventory').onSnapshot((snap) => {
                             setInventory(snap.docs.map(d => ({ invId: d.id, ...d.data() })));
                         });
-
-                        return () => { unsubUser(); unsubInv(); };
                     }
                     setLoading(false);
                 });
@@ -138,49 +139,54 @@
                 localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
             }, [isDarkMode]);
 
-            if (loading) return <div className="h-screen flex items-center justify-center bg-slate-950 text-white font-black uppercase tracking-widest">Bidi Loading...</div>;
+            if (loading) return <div className="h-screen flex items-center justify-center bg-slate-950 text-white font-black uppercase tracking-tighter italic">Bidi Loading...</div>;
             if (!user) return <AuthScreen />;
 
             return (
                 <div className="flex h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-all font-sans">
-                    {/* Sidebar */}
                     <nav className="w-72 bg-white dark:bg-slate-900 border-r dark:border-slate-800 flex flex-col p-6 gap-2 shadow-xl z-20">
                         <div className="mb-10 p-2 flex items-center gap-3">
-                            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg">B</div>
-                            <span className="font-black tracking-tighter text-xl uppercase">BIDI</span>
+                            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg shadow-indigo-500/30">B</div>
+                            <span className="font-black tracking-tighter text-xl uppercase italic">BIDI Community</span>
                         </div>
                         
                         <NavItem icon="home" label="Trang chủ" active={activeTab === 'home'} onClick={() => setActiveTab('home')} />
-                        <NavItem icon="layout-grid" label="Cộng đồng" active={activeTab === 'posts'} onClick={() => setActiveTab('posts')} />
-                        <NavItem icon="check-circle-2" label="Nhiệm vụ" active={activeTab === 'tasks'} onClick={() => setActiveTab('tasks')} />
-                        <NavItem icon="shopping-bag" label="Cửa hàng" active={activeTab === 'shop'} onClick={() => setActiveTab('shop')} />
-                        <NavItem icon="briefcase" label="Kho đồ" active={activeTab === 'inventory'} onClick={() => setActiveTab('inventory')} />
-                        <NavItem icon="bot" label="AI Chat" active={activeTab === 'ai'} onClick={() => setActiveTab('ai')} />
-                        <NavItem icon="settings" label="Cài đặt" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
+                        <NavItem icon="users" label="Cộng đồng" active={activeTab === 'posts'} onClick={() => setActiveTab('posts')} />
+                        <NavItem icon="target" label="Nhiệm vụ" active={activeTab === 'tasks'} onClick={() => setActiveTab('tasks')} />
+                        <NavItem icon="shopping-cart" label="Cửa hàng" active={activeTab === 'shop'} onClick={() => setActiveTab('shop')} />
+                        <NavItem icon="archive" label="Kho đồ" active={activeTab === 'inventory'} onClick={() => setActiveTab('inventory')} />
+                        <NavItem icon="sparkles" label="AI Bidi Chat" active={activeTab === 'ai'} onClick={() => setActiveTab('ai')} />
+                        <NavItem icon="settings" label="Cấu hình" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
 
-                        <div className="mt-auto p-4 bg-slate-50 dark:bg-slate-800 rounded-3xl">
+                        <div className="mt-auto p-4 bg-slate-50 dark:bg-slate-800 rounded-3xl border dark:border-slate-700">
                            <div className="flex items-center gap-3 mb-4">
-                              <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-lg">{userData?.displayName?.[0] || 'U'}</div>
+                              <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-xl shadow-md uppercase">{userData?.displayName?.[0] || 'U'}</div>
                               <div className="flex-1 min-w-0">
-                                 <p className="text-[10px] font-black truncate uppercase tracking-tighter">{userData?.displayName || 'User'}</p>
-                                 <p className="text-[10px] text-amber-500 font-bold">{userData?.points || 0} PTS</p>
+                                 <p className="text-[11px] font-black truncate uppercase tracking-tighter">{userData?.displayName || 'Thành viên'}</p>
+                                 <p className="text-[10px] text-amber-500 font-black flex items-center gap-1"><Icon name="coins" size={10}/> {userData?.points || 0} PTS</p>
                               </div>
                            </div>
-                           <button onClick={() => auth.signOut()} className="w-full text-[9px] font-black uppercase text-red-500 tracking-widest flex items-center justify-center gap-2 py-2 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-colors"><Icon name="log-out" size={12}/> Đăng xuất</button>
+                           <button onClick={() => auth.signOut()} className="w-full text-[9px] font-black uppercase text-red-500 tracking-widest flex items-center justify-center gap-2 py-3 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-2xl transition-colors">Đăng xuất</button>
                         </div>
                     </nav>
 
-                    <main className="flex-1 flex flex-col overflow-hidden">
-                        <header className="h-16 border-b dark:border-slate-800 flex items-center justify-between px-10 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md">
-                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-600">{activeTab}</span>
+                    <main className="flex-1 flex flex-col overflow-hidden relative">
+                        <header className="h-20 border-b dark:border-slate-800 flex items-center justify-between px-10 glass sticky top-0 z-10">
+                            <span className="text-[11px] font-black uppercase tracking-[0.4em] text-indigo-600">{activeTab}</span>
+                            <div className="flex items-center gap-4">
+                                <div className="px-4 py-2 bg-amber-50 dark:bg-amber-900/20 rounded-full text-amber-600 text-[10px] font-black flex items-center gap-2">
+                                    <Icon name="zap" size={14}/> PREMIUM STATUS
+                                </div>
+                            </div>
                         </header>
-                        <div className="flex-1 overflow-y-auto p-10">
+                        
+                        <div className="flex-1 overflow-y-auto p-10 custom-scrollbar">
                             {activeTab === 'home' && <HomeView userData={userData} />}
                             {activeTab === 'tasks' && <TasksView user={user} userData={userData} />}
                             {activeTab === 'ai' && <AIChatView />}
                             {activeTab === 'shop' && <ShopView points={userData?.points || 0} user={user} />}
-                            {activeTab === 'inventory' && <InventoryView inventory={inventory} user={user} />}
-                            {activeTab === 'settings' && <SettingsView userData={userData} user={user} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />}
+                            {activeTab === 'inventory' && <InventoryView inventory={inventory} />}
+                            {activeTab === 'settings' && <SettingsView isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />}
                             {activeTab === 'posts' && <PostManager user={user} userData={userData} />}
                         </div>
                     </main>
@@ -189,7 +195,7 @@
         };
 
         const NavItem = ({ icon, label, active, onClick }) => (
-            <button onClick={onClick} className={`flex items-center gap-4 w-full p-4 rounded-2xl transition-all ${active ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
+            <button onClick={onClick} className={`flex items-center gap-4 w-full p-4 rounded-2xl transition-all duration-300 ${active ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-500/20 scale-105' : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
                 <Icon name={icon} />
                 <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
             </button>
@@ -204,6 +210,7 @@
 
             const handleAuth = async (e) => {
                 e.preventDefault();
+                setError("");
                 try {
                     if (mode === 'login') {
                         await auth.signInWithEmailAndPassword(email, password);
@@ -212,68 +219,99 @@
                         await db.collection('artifacts').doc(appId).collection('users').doc(res.user.uid).set({ 
                             email, 
                             displayName: displayName || email.split('@')[0], 
-                            points: 500, 
+                            points: 1000, 
                             createdAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                     }
-                } catch (err) { 
-                    console.error(err);
-                    setError("Vui lòng kiểm tra lại tài khoản/mật khẩu."); 
-                }
+                } catch (err) { setError("Lỗi hệ thống hoặc tài khoản/mật khẩu sai."); }
             };
 
             return (
-                <div className="h-screen flex items-center justify-center bg-slate-950 p-6">
-                    <div className="w-full max-w-md bg-white p-12 rounded-[4rem] shadow-2xl">
-                        <div className="w-16 h-16 bg-blue-600 rounded-3xl mx-auto mb-8 flex items-center justify-center text-white text-3xl font-black">B</div>
-                        <h2 className="text-4xl font-black text-center mb-10 text-slate-900 tracking-tighter uppercase">{mode === 'login' ? 'Đăng nhập' : 'Đăng ký'}</h2>
-                        {error && <div className="bg-red-50 text-red-500 p-4 rounded-2xl mb-6 text-[10px] font-black uppercase text-center">{error}</div>}
+                <div className="h-screen flex items-center justify-center bg-slate-950 p-6 overflow-hidden">
+                    <div className="absolute inset-0 bg-indigo-600 opacity-10 animate-pulse"></div>
+                    <div className="w-full max-w-md bg-white p-12 rounded-[4rem] shadow-2xl relative z-10 border-8 border-slate-100">
+                        <div className="w-20 h-20 bg-indigo-600 rounded-[2rem] mx-auto mb-8 flex items-center justify-center text-white text-4xl font-black italic shadow-2xl rotate-3">B</div>
+                        <h2 className="text-4xl font-black text-center mb-2 text-slate-900 tracking-tighter uppercase italic">BIDI Community</h2>
+                        <p className="text-center text-[10px] font-black text-slate-400 mb-10 tracking-[0.2em]">KẾT NỐI - CHIA SẺ - KIẾM PTS</p>
+                        
+                        {error && <div className="bg-red-50 text-red-500 p-4 rounded-2xl mb-6 text-[10px] font-black uppercase text-center border border-red-100">{error}</div>}
+                        
                         <form onSubmit={handleAuth} className="space-y-4">
-                            {mode === 'signup' && <input placeholder="Tên của bạn" className="w-full bg-slate-50 rounded-2xl p-5 text-sm font-bold outline-none border" value={displayName} onChange={e => setDisplayName(e.target.value)} />}
-                            <input placeholder="Email" className="w-full bg-slate-50 rounded-2xl p-5 text-sm font-bold outline-none border" value={email} onChange={e => setEmail(e.target.value)} />
-                            <input type="password" placeholder="Mật khẩu" className="w-full bg-slate-50 rounded-2xl p-5 text-sm font-bold outline-none border" value={password} onChange={e => setPassword(e.target.value)} />
-                            <button className="w-full bg-blue-600 text-white font-black py-5 rounded-2xl uppercase text-[10px] tracking-widest shadow-xl mt-4">Xác nhận</button>
+                            {mode === 'signup' && <input placeholder="Tên hiển thị" className="w-full bg-slate-50 rounded-2xl p-5 text-sm font-bold outline-none border focus:border-indigo-600 transition-all" value={displayName} onChange={e => setDisplayName(e.target.value)} />}
+                            <input placeholder="Email học sinh/sinh viên" className="w-full bg-slate-50 rounded-2xl p-5 text-sm font-bold outline-none border focus:border-indigo-600 transition-all" value={email} onChange={e => setEmail(e.target.value)} />
+                            <input type="password" placeholder="Mật khẩu bảo mật" className="w-full bg-slate-50 rounded-2xl p-5 text-sm font-bold outline-none border focus:border-indigo-600 transition-all" value={password} onChange={e => setPassword(e.target.value)} />
+                            <button className="w-full bg-indigo-600 text-white font-black py-6 rounded-3xl uppercase text-[11px] tracking-widest shadow-2xl shadow-indigo-500/40 hover:scale-[1.02] active:scale-95 transition-all mt-4">Xác nhận ورود</button>
                         </form>
-                        <button onClick={() => setMode(mode === 'login' ? 'signup' : 'login')} className="w-full mt-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">{mode === 'login' ? 'Chưa có tài khoản? Đăng ký' : 'Đã có tài khoản? Đăng nhập'}</button>
+                        <button onClick={() => setMode(mode === 'login' ? 'signup' : 'login')} className="w-full mt-8 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-indigo-600 transition-colors">
+                            {mode === 'login' ? 'Tạo tài khoản mới?' : 'Đã có tài khoản Bidi?'}
+                        </button>
                     </div>
                 </div>
             );
         };
 
         const HomeView = ({ userData }) => (
-            <div className="space-y-8 animate-in fade-in duration-500">
-                <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-16 rounded-[4rem] text-white shadow-2xl">
-                    <h2 className="text-5xl font-black mb-4 tracking-tighter uppercase">Chào, {userData?.displayName || 'Bidi-er'}!</h2>
-                    <p className="opacity-80 font-bold text-lg">Hệ thống Community đã sẵn sàng.</p>
+            <div className="space-y-12 animate-in slide-in-from-bottom-10 duration-700">
+                <div className="bg-indigo-600 p-20 rounded-[5rem] text-white shadow-2xl relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 group-hover:scale-150 transition-all duration-1000"></div>
+                    <h2 className="text-7xl font-black mb-6 tracking-tighter uppercase italic leading-none">Yo, {userData?.displayName || 'Friend'}!</h2>
+                    <p className="opacity-80 font-black text-xl tracking-wide">Bạn đã sẵn sàng để trở thành huyền thoại PTS hôm nay chưa?</p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="bg-amber-400 p-10 rounded-[4rem] text-slate-900 shadow-xl border-4 border-white">
+                        <h4 className="font-black text-3xl uppercase tracking-tighter mb-2">Số dư PTS</h4>
+                        <div className="text-6xl font-black italic">{userData?.points || 0}</div>
+                        <p className="mt-4 font-bold opacity-70">Năng lượng của bạn trong BIDI World.</p>
+                    </div>
+                    <div className="bg-slate-900 p-10 rounded-[4rem] text-white shadow-xl border-4 border-indigo-600">
+                        <h4 className="font-black text-3xl uppercase tracking-tighter mb-2">Hạng tuần</h4>
+                        <div className="text-6xl font-black italic">#14</div>
+                        <p className="mt-4 font-bold opacity-70 italic text-indigo-400">Gần đạt Top 10 rồi, cố lên!</p>
+                    </div>
                 </div>
             </div>
         );
 
         const TasksView = ({ user, userData }) => {
-            const handleCheckIn = async () => {
+            const handleTask = async (task) => {
                 const today = new Date().toISOString().split('T')[0];
-                if (userData?.lastCheckIn === today) return alert("Hôm nay điểm danh rồi!");
-                const reward = new Date().getDay() === 0 ? 10 : 5;
+                if (task.id === 'checkin' && userData?.lastCheckIn === today) return alert("Hôm nay bạn đã điểm danh rồi!");
                 
                 await db.collection('artifacts').doc(appId).collection('users').doc(user.uid).update({ 
-                    points: firebase.firestore.FieldValue.increment(reward), 
+                    points: firebase.firestore.FieldValue.increment(task.reward), 
                     lastCheckIn: today 
                 });
-                alert(`Nhận ${reward} PTS!`);
+                alert(`Chúc mừng! Bạn nhận được ${task.reward} PTS từ nhiệm vụ ${task.name}`);
             };
+
             return (
-                <div className="bg-white dark:bg-slate-900 p-10 rounded-[3rem] border dark:border-slate-800 flex justify-between items-center">
-                    <div>
-                        <h3 className="text-2xl font-black">Điểm danh hằng ngày</h3>
-                        <p className="text-slate-500 font-medium">Làm giàu không khó với BIDI.</p>
+                <div className="space-y-8 animate-in fade-in duration-500">
+                    <h2 className="text-4xl font-black uppercase italic tracking-tighter">Nhiệm vụ hằng ngày</h2>
+                    <div className="grid gap-6">
+                        {DAILY_TASKS.map(task => (
+                            <div key={task.id} className="bg-white dark:bg-slate-900 p-8 rounded-[3rem] border-2 dark:border-slate-800 flex justify-between items-center group hover:border-indigo-600 transition-all">
+                                <div className="flex items-center gap-6">
+                                    <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-3xl flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform shadow-sm">
+                                        <Icon name={task.icon} size={32} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-2xl font-black tracking-tight">{task.name}</h3>
+                                        <p className="text-amber-500 font-black flex items-center gap-1 uppercase text-[10px] tracking-widest mt-1">
+                                            Phần thưởng: +{task.reward} PTS
+                                        </p>
+                                    </div>
+                                </div>
+                                <button onClick={() => handleTask(task)} className="px-10 py-4 bg-indigo-600 text-white rounded-[2rem] font-black uppercase text-[10px] tracking-[0.2em] shadow-lg hover:shadow-indigo-500/40 transition-all active:scale-95">Hoàn thành</button>
+                            </div>
+                        ))}
                     </div>
-                    <button onClick={handleCheckIn} className="px-10 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest">Điểm danh</button>
                 </div>
             );
         };
 
         const AIChatView = () => {
-            const [messages, setMessages] = useState([{ role: 'bot', text: 'Tôi là Bidi AI, bạn muốn trò chuyện cùng ai?' }]);
+            const [messages, setMessages] = useState([{ role: 'bot', text: 'Tôi là Bidi AI siêu cấp hóng hớt. Bạn muốn tôi nhập vai ai hôm nay?' }]);
             const [input, setInput] = useState('');
             const [aiMode, setAiMode] = useState('normal');
 
@@ -286,66 +324,90 @@
             };
 
             return (
-                <div className="h-[500px] flex flex-col bg-white dark:bg-slate-900 rounded-[3rem] border dark:border-slate-800 overflow-hidden">
-                    <div className="p-4 bg-slate-50 dark:bg-slate-800 flex gap-2 justify-center">
+                <div className="h-[650px] flex flex-col bg-white dark:bg-slate-900 rounded-[4rem] border-4 border-slate-100 dark:border-slate-800 overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+                    <div className="p-6 bg-slate-50 dark:bg-slate-800/50 flex gap-4 justify-center border-b dark:border-slate-700">
                         {['normal', 'hanako', 'trumpo'].map(m => (
-                            <button key={m} onClick={() => setAiMode(m)} className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase ${aiMode === m ? 'bg-blue-600 text-white' : 'bg-white dark:bg-slate-900'}`}>{m}</button>
+                            <button key={m} onClick={() => setAiMode(m)} className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${aiMode === m ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white dark:bg-slate-900 border'}`}>
+                                {m === 'normal' ? 'AI Hữu ích' : m === 'hanako' ? 'Hanako-kun' : 'Trumpo Mỏ Hỗn'}
+                            </button>
                         ))}
                     </div>
-                    <div className="flex-1 overflow-y-auto p-10 space-y-4">
+                    <div className="flex-1 overflow-y-auto p-12 space-y-6 custom-scrollbar">
                         {messages.map((m, i) => (
                             <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`p-4 rounded-2xl max-w-[80%] text-sm font-bold ${m.role === 'user' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800'}`}>{m.text}</div>
+                                <div className={`p-6 rounded-[2.5rem] max-w-[85%] text-sm font-bold shadow-sm ${m.role === 'user' ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-slate-100 dark:bg-slate-800 rounded-bl-none text-slate-800 dark:text-slate-200'}`}>
+                                    {m.text}
+                                </div>
                             </div>
                         ))}
                     </div>
-                    <div className="p-6 flex gap-4 border-t dark:border-slate-800">
-                        <input value={input} onChange={e => setInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleSend()} className="flex-1 bg-slate-50 dark:bg-slate-800 rounded-xl px-4 outline-none" placeholder="Chat..." />
-                        <button onClick={handleSend} className="p-4 bg-blue-600 text-white rounded-xl"><Icon name="send"/></button>
+                    <div className="p-8 flex gap-4 glass border-t dark:border-slate-800">
+                        <input value={input} onChange={e => setInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleSend()} className="flex-1 bg-slate-50 dark:bg-slate-800/80 rounded-[2rem] px-8 text-sm font-bold outline-none border focus:border-indigo-600 transition-all" placeholder="Gửi tín hiệu đến Bidi AI..." />
+                        <button onClick={handleSend} className="w-14 h-14 bg-indigo-600 text-white rounded-[1.5rem] flex items-center justify-center shadow-lg hover:rotate-12 transition-transform"><Icon name="send"/></button>
                     </div>
                 </div>
             );
         };
 
         const ShopView = ({ points, user }) => {
+            const [currentCat, setCurrentCat] = useState('utility');
+
             const buy = async (item) => {
-                if (points < item.price) return alert("Nghèo quá không đủ PTS!");
+                if (points < item.price) return alert("Thôi xong, bạn cần thêm PTS để mua món này!");
                 const userDocRef = db.collection('artifacts').doc(appId).collection('users').doc(user.uid);
-                
                 await userDocRef.update({ points: firebase.firestore.FieldValue.increment(-item.price) });
                 await userDocRef.collection('inventory').add({ ...item, boughtAt: firebase.firestore.FieldValue.serverTimestamp() });
-                alert("Đã mua thành công!");
+                alert(`Đã sở hữu ${item.name}! Hãy kiểm tra kho đồ.`);
             };
+
             return (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {SHOP_ITEMS.map(i => (
-                        <div key={i.id} className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border dark:border-slate-800 text-center">
-                            <Icon name={i.icon} size={32} className="mx-auto mb-4 text-blue-600" />
-                            <h4 className="font-black text-lg mb-2">{i.name}</h4>
-                            <p className="text-amber-500 font-black mb-6">{i.price} PTS</p>
-                            <button onClick={() => buy(i)} className="w-full py-3 bg-blue-600 text-white rounded-xl font-black text-[9px] uppercase">Mua</button>
-                        </div>
-                    ))}
+                <div className="space-y-10 animate-in fade-in duration-500">
+                    <div className="flex gap-4 overflow-x-auto pb-4 scroll-hide">
+                        {SHOP_CATEGORIES.map(cat => (
+                            <button key={cat.id} onClick={() => setCurrentCat(cat.id)} className={`flex items-center gap-3 px-8 py-4 rounded-3xl font-black uppercase text-[11px] tracking-widest transition-all whitespace-nowrap ${currentCat === cat.id ? 'bg-indigo-600 text-white shadow-xl' : 'bg-white dark:bg-slate-900 border'}`}>
+                                <Icon name={cat.icon} size={16} /> {cat.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {SHOP_ITEMS.filter(i => i.type === currentCat).map(i => (
+                            <div key={i.id} className="bg-white dark:bg-slate-900 p-10 rounded-[4rem] border-2 dark:border-slate-800 text-center relative group hover:border-indigo-600 transition-all shadow-sm">
+                                <div className="absolute top-6 right-6 text-amber-500 font-black italic">{i.price} PTS</div>
+                                <div className="w-24 h-24 bg-slate-50 dark:bg-slate-800 rounded-[2.5rem] mx-auto mb-8 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
+                                    <Icon name={i.icon} size={48} />
+                                </div>
+                                <h4 className="font-black text-2xl mb-2">{i.name}</h4>
+                                <p className="text-slate-400 text-xs font-bold mb-8 px-4 leading-relaxed">{i.desc}</p>
+                                <button onClick={() => buy(i)} className="w-full py-5 bg-slate-900 dark:bg-indigo-600 text-white rounded-[2rem] font-black text-[10px] uppercase tracking-[0.2em] shadow-lg hover:shadow-indigo-500/20 active:scale-95 transition-all">Sở hữu ngay</button>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             );
         };
 
         const InventoryView = ({ inventory }) => (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {inventory.map((i, idx) => (
-                    <div key={idx} className="bg-white dark:bg-slate-900 p-6 rounded-3xl border dark:border-slate-800 text-center">
-                        <Icon name={i.icon} className="mx-auto mb-2" />
-                        <p className="text-[10px] font-black uppercase">{i.name}</p>
+            <div className="space-y-10">
+                <h2 className="text-4xl font-black uppercase italic tracking-tighter">Kho đồ của bạn</h2>
+                {inventory.length === 0 ? (
+                    <div className="bg-white dark:bg-slate-900 p-20 rounded-[4rem] border-2 border-dashed flex flex-col items-center justify-center opacity-50">
+                        <Icon name="package-open" size={64} className="mb-6" />
+                        <p className="font-black uppercase tracking-widest text-xs italic text-center">Rỗng tuếch! Hãy ra cửa hàng sắm đồ đi nào.</p>
                     </div>
-                ))}
-            </div>
-        );
-
-        const SettingsView = ({ isDarkMode, setIsDarkMode }) => (
-            <div className="bg-white dark:bg-slate-900 p-10 rounded-[3rem] border dark:border-slate-800">
-                <button onClick={() => setIsDarkMode(!isDarkMode)} className="flex items-center gap-4 font-black uppercase text-[10px]">
-                    {isDarkMode ? "Chế độ Sáng" : "Chế độ Tối"} <Icon name={isDarkMode ? 'sun' : 'moon'} />
-                </button>
+                ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        {inventory.map((i, idx) => (
+                            <div key={idx} className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border-2 dark:border-slate-800 text-center shadow-md animate-in zoom-in duration-300">
+                                <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-3xl mx-auto mb-4 flex items-center justify-center text-indigo-600">
+                                    <Icon name={i.icon} size={28} />
+                                </div>
+                                <p className="text-[11px] font-black uppercase tracking-tighter leading-none">{i.name}</p>
+                                <p className="text-[9px] font-bold text-slate-400 mt-2">Dạng: {i.type}</p>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         );
 
@@ -353,42 +415,100 @@
             const [posts, setPosts] = useState([]);
             const [title, setTitle] = useState('');
             const [content, setContent] = useState('');
+            const [type, setType] = useState('homework');
 
             useEffect(() => {
                 const unsub = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('posts')
-                    .orderBy('createdAt', 'desc')
-                    .onSnapshot((snap) => setPosts(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+                    .onSnapshot((snap) => {
+                        const allPosts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                        setPosts(allPosts.sort((a,b) => b.createdAt?.seconds - a.createdAt?.seconds));
+                    });
                 return () => unsub();
             }, []);
 
             const submitPost = async () => {
-                if (!title.trim()) return;
+                if (!title.trim() || !content.trim()) return alert("Vui lòng điền đủ thông tin bài đăng.");
                 await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('posts').add({
-                    title, 
-                    content, 
+                    title, content, type,
                     author: userData?.displayName || user.email, 
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    authorId: user.uid,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    points: 0
                 });
                 setTitle(''); setContent('');
+                alert("Đăng bài thành công! +20 PTS");
+                await db.collection('artifacts').doc(appId).collection('users').doc(user.uid).update({ 
+                    points: firebase.firestore.FieldValue.increment(20)
+                });
             };
 
             return (
-                <div className="space-y-6">
-                    <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl space-y-4 border">
-                        <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Tiêu đề..." className="w-full bg-slate-50 dark:bg-slate-800 p-4 rounded-xl font-black" />
-                        <textarea value={content} onChange={e => setContent(e.target.value)} placeholder="Nội dung..." className="w-full bg-slate-50 dark:bg-slate-800 p-4 rounded-xl font-bold" />
-                        <button onClick={submitPost} className="w-full bg-blue-600 text-white py-4 rounded-xl font-black uppercase text-[10px]">Đăng bài</button>
-                    </div>
-                    {posts.map(p => (
-                        <div key={p.id} className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border">
-                            <h4 className="text-xl font-black">{p.title}</h4>
-                            <p className="text-slate-500 mt-2">{p.content}</p>
-                            <p className="text-[9px] font-black uppercase text-blue-500 mt-4">By: {p.author}</p>
+                <div className="space-y-12 animate-in fade-in duration-500 max-w-4xl mx-auto">
+                    <div className="bg-white dark:bg-slate-900 p-12 rounded-[4rem] space-y-6 border-4 border-slate-50 dark:border-slate-800 shadow-2xl">
+                        <div className="flex gap-4">
+                            <button onClick={() => setType('homework')} className={`flex-1 py-4 rounded-3xl font-black uppercase text-[10px] tracking-widest border-2 transition-all ${type === 'homework' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-50 dark:bg-slate-800 border-transparent'}`}>
+                                <Icon name="graduation-cap" className="inline mr-2" size={14}/> Homework
+                            </button>
+                            <button onClick={() => setType('stories')} className={`flex-1 py-4 rounded-3xl font-black uppercase text-[10px] tracking-widest border-2 transition-all ${type === 'stories' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-50 dark:bg-slate-800 border-transparent'}`}>
+                                <Icon name="book-open" className="inline mr-2" size={14}/> Stories
+                            </button>
                         </div>
-                    ))}
+                        <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Tên bài tập hoặc tiêu đề truyện..." className="w-full bg-slate-50 dark:bg-slate-800 p-6 rounded-3xl font-black text-lg outline-none focus:ring-4 ring-indigo-500/10 transition-all" />
+                        <textarea value={content} onChange={e => setContent(e.target.value)} placeholder="Nội dung chi tiết..." rows="5" className="w-full bg-slate-50 dark:bg-slate-800 p-6 rounded-3xl font-bold outline-none focus:ring-4 ring-indigo-500/10 transition-all resize-none" />
+                        <button onClick={submitPost} className="w-full bg-indigo-600 text-white py-6 rounded-[2.5rem] font-black uppercase text-[11px] tracking-[0.3em] shadow-2xl hover:scale-[1.01] active:scale-95 transition-all">Đăng bài ngay</button>
+                    </div>
+
+                    <div className="space-y-8">
+                        <h3 className="text-3xl font-black uppercase italic tracking-tighter border-l-8 border-indigo-600 pl-6">New Feed</h3>
+                        {posts.map(p => (
+                            <div key={p.id} className="bg-white dark:bg-slate-900 p-10 rounded-[3.5rem] border-2 dark:border-slate-800 shadow-sm relative overflow-hidden group hover:shadow-xl transition-all">
+                                <div className={`absolute top-0 right-0 px-8 py-3 rounded-bl-3xl font-black uppercase text-[9px] tracking-widest text-white ${p.type === 'homework' ? 'bg-amber-500' : 'bg-indigo-600'}`}>
+                                    {p.type}
+                                </div>
+                                <h4 className="text-3xl font-black mb-4 group-hover:text-indigo-600 transition-colors leading-tight">{p.title}</h4>
+                                <p className="text-slate-600 dark:text-slate-400 font-bold leading-relaxed mb-8">{p.content}</p>
+                                <div className="flex items-center justify-between border-t dark:border-slate-800 pt-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center font-black text-xs uppercase">{p.author?.[0]}</div>
+                                        <p className="text-[10px] font-black uppercase text-indigo-500">{p.author}</p>
+                                    </div>
+                                    <div className="flex gap-4">
+                                        <button className="flex items-center gap-2 text-[10px] font-black uppercase opacity-50 hover:opacity-100 transition-opacity"><Icon name="message-square" size={14}/> 0</button>
+                                        <button className="flex items-center gap-2 text-[10px] font-black uppercase text-pink-500"><Icon name="heart" size={14}/> 0</button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             );
         };
+
+        const SettingsView = ({ isDarkMode, setIsDarkMode }) => (
+            <div className="max-w-xl space-y-8 animate-in slide-in-from-right-10 duration-500">
+                <h2 className="text-4xl font-black uppercase italic tracking-tighter">Cấu hình hệ thống</h2>
+                <div className="bg-white dark:bg-slate-900 p-12 rounded-[4rem] border-4 dark:border-slate-800 space-y-8">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="font-black uppercase text-[11px] tracking-widest">Giao diện bóng tối</p>
+                            <p className="text-slate-400 text-[10px] font-bold">Bảo vệ đôi mắt cú đêm của bạn.</p>
+                        </div>
+                        <button onClick={() => setIsDarkMode(!isDarkMode)} className={`w-16 h-10 rounded-full p-1 transition-all ${isDarkMode ? 'bg-indigo-600' : 'bg-slate-200'}`}>
+                            <div className={`w-8 h-8 bg-white rounded-full shadow-md transition-all transform ${isDarkMode ? 'translate-x-6' : 'translate-x-0'}`}></div>
+                        </button>
+                    </div>
+                    <div className="flex items-center justify-between opacity-50">
+                        <div>
+                            <p className="font-black uppercase text-[11px] tracking-widest">Thông báo đẩy</p>
+                            <p className="text-slate-400 text-[10px] font-bold">Nhận tin khi có bài tập mới.</p>
+                        </div>
+                        <div className="w-16 h-10 bg-slate-100 dark:bg-slate-800 rounded-full p-1">
+                            <div className="w-8 h-8 bg-slate-300 rounded-full shadow-md"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
